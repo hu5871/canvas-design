@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+      * {
+        margin: 0;
+        box-sizing: border-box;
+      }
+      canvas{
+        /* display: block; */
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app" style="width: 100vw; height: 100vh; display: flex">
+      <div style="width: 220px">
+        <button id="addView">Add View</button>
+      </div>
+      <div id="design" style="flex: 1 1 0%"></div>
+      <div style="width: 300px"></div>
+    </div>
+    <script type="module">
+      import Design from './dist/index.js'
+      const design = new Design({
+        target: '#design',
+      })
+      addView.addEventListener("click",(e)=>{
+        design.activeTool("drawView")
+      })
+    </script>
+  </body>
+</html>
