@@ -5,6 +5,7 @@ import Design from "./index";
 
 
 export type ICursor =
+  'no-drop'
   | 'default'
   | 'grab'
   | 'grabbing'
@@ -12,18 +13,18 @@ export type ICursor =
   | 'pointer'
   | 'crosshair'
   | 'text';
-  
+
 export default class Cursor {
   private cursor!: ICursor;
   constructor(private canvas: Canvas, private design: Design) {
     this.setCursor('default')
   }
   setCursor(cursor: ICursor) {
-    this.cursor=cursor
-    this.canvas.canvasElement.style.cursor=cursor
+    this.cursor = cursor
+    this.canvas.canvasElement.style.cursor = cursor
   }
 
-  getCursor(){
+  getCursor() {
     return this.cursor
   }
 }
