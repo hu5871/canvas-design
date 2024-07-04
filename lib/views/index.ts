@@ -16,6 +16,26 @@ interface IView {
 }
 
 
+/**
+ * normalize rect,
+ * width or height may be negative
+ */
+export const normalizeRect = ({ x, y, width, height }: IRect): IRect => {
+  const x2 = x + width;
+  const y2 = y + height;
+  return getRectByTwoPoint({ x, y }, { x: x2, y: y2 });
+};
+
+
+export const getRectByTwoPoint = (point1: IPoint, point2: IPoint): IRect => {
+  return {
+    x: Math.min(point1.x, point2.x),
+    y: Math.min(point1.y, point2.y),
+    width: Math.abs(point1.x - point2.x),
+    height: Math.abs(point1.y - point2.y),
+  };
+};
+
 export default class Views {
   views: IView[] = []
   public tool: Tool = new Tool(this.design)
@@ -32,14 +52,14 @@ export default class Views {
   registerEvent() {
     this.tool.on("onChange", this.setAction)
     this.design.designEvents.on("pointerDown", this.start)
-    this.design.designEvents.on("click", this.hitView)
+    this.design.designEvents.on("dbclick", this.dblclick)
     this.design.designEvents.on("pointerMove", this.move)
     this.design.designEvents.on("pointerUp", this.end)
   }
   setAction = (action: ToolType) => {
     this.toolAction = action
   }
-  click = (e: MouseEvent) => {
+  dblclick = (e: MouseEvent) => {
     if (this.__is_dragging) {
       this.__is_dragging = false
       return
@@ -84,8 +104,9 @@ export default class Views {
     this.design.canvas.render()
   }
 
-  updateView() {
-    let rectInfo: IRect | null = this.drawElement || null
+  updateView() { 
+    if(!this.drawElement ) return 
+    let rectInfo: IRect  = this.drawElement 
     const { x: startX, y: startY } = this.startPoint;
     if (!this.__is_dragging || !rectInfo) {
       const { width, height } = this.design.setting.settingConfig.view
@@ -102,10 +123,11 @@ export default class Views {
     if (width === 0 || height === 0) {
       return
     }
-    rectInfo.x = startX
-    rectInfo.y = startY
-    rectInfo.width = width
-    rectInfo.height = height
+    const rect= normalizeRect({x:startX,y:startY,width,height})
+    rectInfo.x = rect.x
+    rectInfo.y = rect.y
+    rectInfo.width = rect.width
+    rectInfo.height = rect.height
   }
 
 
@@ -129,14 +151,13 @@ export default class Views {
       const { x, y, width, height, __id } = view
       ctx.beginPath(); // 开始新的路径
       if (this.currentView && this.currentView.__id == __id) {
-
+        
       }
       ctx.fillStyle = "#ffffff"
       ctx.fillRect(x, y, width, height);
     })
     ctx.stroke()
   }
-
 
 
   appendView({ width, height, x, y }: IRect) {

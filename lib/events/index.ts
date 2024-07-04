@@ -25,7 +25,7 @@ export default class DesignEvents {
 
   private listendragView(canvas: HTMLCanvasElement) {
     canvas.addEventListener('wheel', this.canvasWheel);
-    canvas.addEventListener('click', this.canvasClick);
+    canvas.addEventListener('dblclick', this.canvasdbClick);
     window.addEventListener("keydown", this.keyDown)
     window.addEventListener("keyup", this.keyUp)
     canvas.addEventListener('pointerdown', this.pointerDown);
@@ -58,8 +58,8 @@ export default class DesignEvents {
   canvasWheel = (e: WheelEvent) => {
     this.emitter.emit("canvasWheel", e)
   }
-  canvasClick = (e: MouseEvent) => {
-    this.emitter.emit("click", e)
+  canvasdbClick = (e: MouseEvent) => {
+    this.emitter.emit("dbclick", e)
   }
   whidowWheel = (e: WheelEvent) => {
     this.emitter.emit("whidowWheel", e)
