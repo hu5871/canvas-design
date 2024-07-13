@@ -1,19 +1,12 @@
 import { ToolType } from './../events/tool';
 import { Tool } from "../events/tool";
 import Design from "../index";
-import { IPoint, IRect } from "../types";
+import { IMatrixArr, IPoint, IRect, IView } from "../types";
 import { UniqueId } from "../utils/uuid";
+import { identityMatrix } from '../geo/geo_matrix';
+import { View } from './view';
 
-interface IView {
-  __version: string;
-  __id: string
-  width: number;
-  height: number;
-  lock: boolean;
-  x: number;
-  y: number;
-  scale: number;
-}
+
 
 
 /**
@@ -37,15 +30,15 @@ export const getRectByTwoPoint = (point1: IPoint, point2: IPoint): IRect => {
 };
 
 export default class Views {
-  views: IView[] = []
+  views: View[] = []
   public tool: Tool = new Tool(this.design)
   startPoint: IPoint = { x: -1, y: -1 };
   lastPoint: IPoint = { x: -1, y: -1 };
   toolAction: ToolType = ""
-  currentView: IView | undefined = undefined
+  currentView: View | undefined = undefined
   private __is_draw: boolean = false
   private __is_dragging: boolean = false
-  private drawElement: IView | null = null
+  private drawView: View | null = null
   constructor(private design: Design) {
     this.registerEvent()
   }
@@ -65,57 +58,62 @@ export default class Views {
       return
     }
     if (this.toolAction || !this.views.length) return
-    this.currentView = this.hitView(e)
+    this.currentView = this.hitTest(e)
   }
 
   start = (e: PointerEvent) => {
-    if (!this.toolAction || this.hitView(e)) return
+    if (!this.toolAction || this.hitTest(e)) return
     this.__is_draw = true
     this.__is_dragging = false
+    this.drawView=null
     this.startPoint = this.design.canvas.getSceneCursorXY(e)
   }
 
   move = (e: PointerEvent) => {
+    if (!this.toolAction) return
     e.stopPropagation()
-    if (this.toolAction && this.hitView(e)) {
+    if (this.toolAction && this.hitTest(e)) {
       this.design.canvas.Cursor.setCursor("no-drop")
     } else {
       this.design.canvas.Cursor.setCursor("default")
     }
-    if (!this.__is_draw) return
+    if(!this.__is_draw) return
+   
     this.lastPoint = this.design.canvas.getSceneCursorXY(e)
-    if (!this.drawElement) {
-      this.drawElement = this.appendView({ x: this.startPoint.x, y: this.startPoint.y, width: 0, height: 0 })
+    if (!this.drawView) {
+      const attrs= {
+        width:0,
+        height:0
+      }
+      const opts= {
+        x: this.startPoint.x,
+        y: this.startPoint.y
+      }
+      this.drawView = new View(attrs,opts,this.design)
+      this.appendView(this.drawView)
     }
     this.__is_dragging = true
     this.updateView()
     this.design.canvas.render()
   }
 
-
-
   end = (e: PointerEvent) => {
     e.stopPropagation()
-    if (!this.__is_dragging) return
-    this.updateView()
+    if (!this.toolAction) return
     this.design.activeTool("")
+    this.updateView()
     this.__is_draw = false
-    this.drawElement = null
+    this.drawView = null
     this.design.canvas.render()
   }
 
-  updateView() { 
-    if(!this.drawElement ) return 
-    let rectInfo: IRect  = this.drawElement 
+  updateView() {
+    let viewInfo: View| null = this.drawView
     const { x: startX, y: startY } = this.startPoint;
-    if (!this.__is_dragging || !rectInfo) {
+    if (!this.__is_dragging || !viewInfo) {
       const { width, height } = this.design.setting.settingConfig.view
-      rectInfo = {
-        x: startX,
-        y: startY,
-        width,
-        height
-      }
+      this.appendView(new View({width,height},{x:startX,y:startY},this.design)) 
+      return
     }
     const { x, y } = this.lastPoint;
     let width = x - startX;
@@ -123,63 +121,20 @@ export default class Views {
     if (width === 0 || height === 0) {
       return
     }
-    const rect= normalizeRect({x:startX,y:startY,width,height})
-    rectInfo.x = rect.x
-    rectInfo.y = rect.y
-    rectInfo.width = rect.width
-    rectInfo.height = rect.height
+    const rect = normalizeRect({ x: startX, y: startY, width, height })
+    viewInfo.updateAttrs(rect)
   }
-
-
-  hitView = (e: MouseEvent) => {
-    const { x, y } = this.design.canvas.getSceneCursorXY(e)
-    const view = this.views.find(item => {
-      return (
-        item.x <= x &&
-        item.x + item.width >= x &&
-        item.y <= y &&
-        item.y + item.height >= y
-      )
-    })
-    return view
-  }
-
 
   draw() {
-    const { ctx } = this.design.canvas
-    this.views.forEach(view => {
-      const { x, y, width, height, __id } = view
-      ctx.beginPath(); // 开始新的路径
-      if (this.currentView && this.currentView.__id == __id) {
-        
-      }
-      ctx.fillStyle = "#ffffff"
-      ctx.fillRect(x, y, width, height);
-    })
-    ctx.stroke()
+    this.views.forEach(item=> item.draw())
   }
 
-
-  appendView({ width, height, x, y }: IRect) {
-    const { v } = this.design.setting
-    const id = UniqueId()
-    const view = {
-      __version: v,
-      __id: id,
-      width,
-      height,
-      x,
-      y,
-      lock: false,
-      scale: 1
-    }
-    this.views.push(view)
-    return view
+  hitTest(e: MouseEvent){
+    return this.views.find(item=> item.hitView(e))
   }
 
-  render() {
-
+  appendView(view: View) {
+   this.views.push(view)
   }
-
 
 }

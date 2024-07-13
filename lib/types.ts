@@ -46,3 +46,25 @@ export interface IConfig{
 export type DeepRequired<T> = {
   [K in keyof T]-?: NonNullable<T[K]> extends object ? DeepRequired<NonNullable<T[K]>> : NonNullable<T[K]>;
 };
+
+export type WithRequired<T, K extends keyof T> = Omit<T, K> & Required<Pick<T, K>>;
+
+
+export interface IView {
+  __version: string;
+  __id: string
+  width: number;
+  height: number;
+  lock: boolean;
+  transform: IMatrixArr,
+  scale: number;
+}
+
+export type IMatrixArr = [
+  a: number,
+  b: number,
+  c: number,
+  d: number,
+  tx: number,
+  ty: number,
+];
