@@ -4,32 +4,106 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Document</title>
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/tdesign-react/dist/tdesign.min.css"
+    />
     <style>
       * {
         margin: 0;
         box-sizing: border-box;
       }
-      canvas{
+      canvas {
         /* display: block; */
       }
     </style>
   </head>
   <body>
-    <div id="app" style="width: 100vw; height: 100vh; display: flex">
-      <div style="width: 220px">
-        <button id="addView">Add View</button>
-      </div>
-      <div id="design" style="flex: 1 1 0%"></div>
-      <div style="width: 300px"></div>
-    </div>
-    <script type="module">
-      import Design from './dist/index.js'
-      const design = new Design({
-        target: '#design',
-      })
-      addView.addEventListener("click",(e)=>{
-        design.activeTool("drawView")
-      })
+    <div id="app" class="w-screen h-screen flex"></div>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/tdesign-react/dist/tdesign.min.js"></script>
+    <script src="https://unpkg.com/tdesign-icons-react@0.3.4/dist/index.min.js"></script>
+
+    <!-- Don't use this in production: -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="./dist/index.umd.js"></script>
+    <script>
+      console.log(window)
+    </script>
+    <script type="text/babel">
+
+      function App() {
+        const { useEffect, useRef, useState } = React
+        const { NavigationArrowIcon, ArtboardIcon } = TDesignIconReact
+        const Layout = TDesign.Layout
+        const { Header, Content, Footer, Aside } = TDesign.Layout
+        const [design, setDesign] = useState(null)
+        const [currentTool,setTool]=useState("select")
+
+        useEffect(() => {
+          let designIns = new Design({
+            target: '#design',
+          })
+          setDesign(designIns)
+          designIns.views.tool.on("onChange", setTool)
+
+          return () => {
+            setDesign(null)
+          }
+        }, [])
+
+
+        function changeTool(tool){
+          design.activeTool(tool)
+        }
+        return (
+          <>
+            <Layout>
+              <Header className="border-b-2 ">
+                <div className="flex h-full items-center">
+                  <div className="w-[100px] h-full"></div>
+                  <TDesign.Space>
+                    <TDesign.Tooltip
+                      content="选择"
+                      destroyOnClose
+                      showArrow
+                      theme="default"
+                    >
+                      <div onClick={()=>changeTool("select")} className={`w-[40px] h-[40px]  rounded flex justify-center items-center ${currentTool === 'select' ? 'bg-[#38bdf8] text-white' :''}`} >
+                        <NavigationArrowIcon className="rotate-[-45deg] w-[20px!important] h-[20px!important] " />
+                      </div>
+                    </TDesign.Tooltip>
+                    <TDesign.Tooltip
+                      content="模板"
+                      destroyOnClose
+                      showArrow
+                      theme="default"
+                    >
+                      <div onClick={()=>changeTool("DRAWVIEW")} className={`w-[40px] h-[40px]  rounded flex justify-center items-center ${currentTool === 'DRAWVIEW' ? 'bg-[#38bdf8] text-white' :''}`} >
+                        <ArtboardIcon className=" w-[20px!important] h-[20px!important]" />
+                      </div>
+                    </TDesign.Tooltip>
+                  </TDesign.Space>
+                </div>
+              </Header>
+              <Layout>
+                <Aside className="border-r-2"></Aside>
+                <Layout>
+                  <Content>
+                    <div id="design" style={{ height: '100%' }}></div>
+                  </Content>
+                </Layout>
+              </Layout>
+            </Layout>
+          </>
+        )
+      }
+
+      const container = document.getElementById('app')
+      const root = ReactDOM.createRoot(container)
+      root.render(<App />)
     </script>
   </body>
 </html>

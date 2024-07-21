@@ -1,7 +1,7 @@
 import Canvas from "./canvas";
 import EventEmitter from "./events/eventEmitter";
 import DesignEvents from "./events/index";
-import { ToolType } from "./events/tool";
+import { ToolType } from "./tool";
 import Settting from "./settting";
 import Views from "./views/index";
 import Zoom from "./zoom";
@@ -14,7 +14,7 @@ interface IOps {
 
 interface EmitEvents {
   [key: string | symbol]: (...args: any[]) => void
-  drawView: () => void
+  switchTool(type: string): void;
 }
 
 class Design {
@@ -38,7 +38,14 @@ class Design {
   
   
   activeTool(type:ToolType){
-    this.views.tool.setAction(type)
+    this.views.activeTool(type)
+  }
+
+
+
+
+  getTools(){
+    return this.views
   }
 
   on<K extends keyof EmitEvents>(eventName: K, handler: EmitEvents[K]) {

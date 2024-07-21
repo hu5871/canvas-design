@@ -70,8 +70,6 @@ export class View {
     return isHit
   }
 
-
-
   draw(){
     const ctx= this.design.canvas.ctx
     const attrs = this.attrs;

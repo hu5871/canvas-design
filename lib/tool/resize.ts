@@ -3,6 +3,7 @@ import { IBaseTool } from "./tpyes";
 
 
 export class Resize  implements IBaseTool{
+  type= 'resize'
   private startPoint: IPoint = { x: -1, y: -1 };
   private handleName!: string;
   private lastPoint: IPoint | null = null;
@@ -13,6 +14,8 @@ export class Resize  implements IBaseTool{
   onActive(){
 
   }
+
+  onInactive(){}
 
   onStart(){
 

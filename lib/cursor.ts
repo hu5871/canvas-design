@@ -1,5 +1,4 @@
 import Canvas from "./canvas";
-import EventEmitter from "./events/eventEmitter";
 import Design from "./index";
 
 

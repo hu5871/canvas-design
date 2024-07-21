@@ -1,4 +1,4 @@
-import { Tool } from './tool';
+import { Tool } from '../tool';
 import { IPoint } from "../types";
 import Design from "../index";
 import { DragCanvas } from "./drag_canvas";
@@ -29,8 +29,8 @@ export default class DesignEvents {
     window.addEventListener("keydown", this.keyDown)
     window.addEventListener("keyup", this.keyUp)
     canvas.addEventListener('pointerdown', this.pointerDown);
-    window.addEventListener('pointermove', this.pointerMove);
-    window.addEventListener('pointerup', this.pointerUp);
+    canvas.addEventListener('pointermove', this.pointerMove);
+    canvas.addEventListener('pointerup', this.pointerUp);
     window.addEventListener('wheel', this.whidowWheel, {
       passive: false,
     });

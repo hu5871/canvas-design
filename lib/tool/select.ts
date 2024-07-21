@@ -1,12 +1,16 @@
+import Design from "..";
 import { IBaseTool } from "./tpyes";
 
 export class SelectedTool implements IBaseTool {
-  constructor() {
-
+  static type:string = "select";
+  constructor(private design:Design) {
+    
+    
   }
   onActive() {
-
+    console.log("onActive")
   }
+  onInactive(){}
 
   onStart() {
 

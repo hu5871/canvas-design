@@ -1,13 +1,9 @@
-import { ToolType } from './../events/tool';
-import { Tool } from "../events/tool";
+import { type ToolType } from './../tool/index';
+import { Tool } from "../tool";
 import Design from "../index";
-import { IMatrixArr, IPoint, IRect, IView } from "../types";
-import { UniqueId } from "../utils/uuid";
-import { identityMatrix } from '../geo/geo_matrix';
+import { IPoint, IRect, IView } from "../types";
+
 import { View } from './view';
-
-
-
 
 /**
  * normalize rect,
@@ -32,90 +28,46 @@ export const getRectByTwoPoint = (point1: IPoint, point2: IPoint): IRect => {
 export default class Views {
   views: View[] = []
   public tool: Tool = new Tool(this.design)
-  startPoint: IPoint = { x: -1, y: -1 };
-  lastPoint: IPoint = { x: -1, y: -1 };
-  toolAction: ToolType = ""
-  currentView: View | undefined = undefined
-  private __is_draw: boolean = false
-  private __is_dragging: boolean = false
-  private drawView: View | null = null
   constructor(private design: Design) {
     this.registerEvent()
   }
   registerEvent() {
-    this.tool.on("onChange", this.setAction)
-    this.design.designEvents.on("pointerDown", this.start)
-    this.design.designEvents.on("dbclick", this.dblclick)
-    this.design.designEvents.on("pointerMove", this.move)
-    this.design.designEvents.on("pointerUp", this.end)
+    this.design.designEvents.on("pointerDown", this.onStart)
+    this.design.designEvents.on("dbclick", this.onDblclick)
+    this.design.designEvents.on("pointerMove", this.onDrag)
+    this.design.designEvents.on("pointerUp", this.onEnd)
   }
-  setAction = (action: ToolType) => {
-    this.toolAction = action
-  }
-  dblclick = (e: MouseEvent) => {
-    if (this.__is_dragging) {
-      this.__is_dragging = false
-      return
-    }
-    if (this.toolAction || !this.views.length) return
-    this.currentView = this.hitTest(e)
+  onDblclick = (e: MouseEvent) => {
   }
 
-  start = (e: PointerEvent) => {
-    if (!this.toolAction || this.hitTest(e)) return
-    this.__is_draw = true
-    this.__is_dragging = false
-    this.drawView=null
-    this.startPoint = this.design.canvas.getSceneCursorXY(e)
+  activeTool(tool:ToolType){
+    this.tool.setAction(tool)
   }
 
-  move = (e: PointerEvent) => {
-    if (!this.toolAction) return
-    e.stopPropagation()
-    if (this.toolAction && this.hitTest(e)) {
-      this.design.canvas.Cursor.setCursor("no-drop")
-    } else {
-      this.design.canvas.Cursor.setCursor("default")
-    }
-    if(!this.__is_draw) return
-   
-    this.lastPoint = this.design.canvas.getSceneCursorXY(e)
-    if (!this.drawView) {
-      const attrs= {
-        width:0,
-        height:0
-      }
-      const opts= {
-        x: this.startPoint.x,
-        y: this.startPoint.y
-      }
-      this.drawView = new View(attrs,opts,this.design)
-      this.appendView(this.drawView)
-    }
-    this.__is_dragging = true
-    this.updateView()
-    this.design.canvas.render()
+  onStart = (e: PointerEvent) => {
+    this.tool.onStart(e);
+  }
+  onDrag = (e: PointerEvent) => {
+    this.tool.onDrag(e)
+  }
+  onEnd = (e: PointerEvent) => {
+    this.tool.onEnd(e)
   }
 
-  end = (e: PointerEvent) => {
-    e.stopPropagation()
-    if (!this.toolAction) return
-    this.design.activeTool("")
-    this.updateView()
-    this.__is_draw = false
-    this.drawView = null
-    this.design.canvas.render()
-  }
 
-  updateView() {
-    let viewInfo: View| null = this.drawView
-    const { x: startX, y: startY } = this.startPoint;
-    if (!this.__is_dragging || !viewInfo) {
+  // 更新模版
+  updateView(
+    { startPoint, lastPoint }: { startPoint: IPoint, lastPoint: IPoint },
+    curView: View | null,
+    isDragging: boolean) {
+    let viewInfo: View | null = curView
+    const { x: startX, y: startY } = startPoint;
+    if (!isDragging || !viewInfo) {
       const { width, height } = this.design.setting.settingConfig.view
-      this.appendView(new View({width,height},{x:startX,y:startY},this.design)) 
+      this.appendView(new View({ width, height }, { x: startX, y: startY }, this.design))
       return
     }
-    const { x, y } = this.lastPoint;
+    const { x, y } = lastPoint;
     let width = x - startX;
     let height = y - startY;
     if (width === 0 || height === 0) {
@@ -126,15 +78,15 @@ export default class Views {
   }
 
   draw() {
-    this.views.forEach(item=> item.draw())
+    this.views.forEach(item => item.draw())
   }
 
-  hitTest(e: MouseEvent){
-    return this.views.find(item=> item.hitView(e))
+  hitTest(e: MouseEvent) {
+    return this.views.find(item => item.hitView(e))
   }
 
   appendView(view: View) {
-   this.views.push(view)
+    this.views.push(view)
   }
 
 }

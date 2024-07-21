@@ -1,5 +1,4 @@
 import Cursor from "./cursor";
-import EventEmitter from "./events/eventEmitter";
 import Design from "./index";
 import { IBox, IRect } from "./types";
 import getDpr from "./utils/dpr";
