@@ -3,7 +3,7 @@ import EventEmitter from "./events/eventEmitter";
 import DesignEvents from "./events/index";
 import { ToolType } from "./tool";
 import Settting from "./settting";
-import Views from "./views/index";
+import SceneGraph from "./scene/index";
 import Zoom from "./zoom";
 
 
@@ -21,13 +21,13 @@ class Design {
   private emitter = new EventEmitter<EmitEvents>()
   canvas: Canvas;
   zoom: Zoom;
-  views: Views;
+  sceneGraph: SceneGraph;
   designEvents: DesignEvents 
   setting = new Settting()
   constructor(ops: IOps) {
     this.canvas = new Canvas(ops.target, this)
     this.designEvents = new DesignEvents(this);
-    this.views = new Views(this)
+    this.sceneGraph = new SceneGraph(this)
     this.zoom = new Zoom(this)
     this.render()
   }
@@ -38,14 +38,12 @@ class Design {
   
   
   activeTool(type:ToolType){
-    this.views.activeTool(type)
+    this.sceneGraph.activeTool(type)
   }
 
 
-
-
   getTools(){
-    return this.views
+    return this.sceneGraph
   }
 
   on<K extends keyof EmitEvents>(eventName: K, handler: EmitEvents[K]) {

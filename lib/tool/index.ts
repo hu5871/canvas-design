@@ -14,8 +14,10 @@ interface Event {
 
 export class Tool {
   private emitter = new EventEmitter<Event>()
-  currentTool: ITool | null = null;
+  private currentTool: ITool | null = null;
   private toolMap = new Map<string, IToolClassConstructor>()
+  private enableToolTypes:string[]=[]
+
 
 
   constructor(private design: Design) {

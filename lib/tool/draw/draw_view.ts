@@ -1,6 +1,6 @@
 import Design from "../..";
 import { IPoint } from "../../types";
-import { View } from "../../views/view";
+import { View } from "../../scene/view";
 import { IBaseTool } from "../tpyes";
 
 export class DrawViewTool implements IBaseTool {
@@ -20,8 +20,8 @@ export class DrawViewTool implements IBaseTool {
   onInactive(){}
 
   onStart = (e: PointerEvent) => {
-    const viewsIns = this.design.views
-    if (viewsIns.hitTest(e)) return
+    const sceneGraphIns = this.design.sceneGraph
+    if (sceneGraphIns.hitTest(e)) return
     this.__is_draw = true
     this.__is_dragging = false
     this.drawView = null
@@ -30,8 +30,8 @@ export class DrawViewTool implements IBaseTool {
 
   onDrag = (e: PointerEvent) => {
     e.stopPropagation()
-    const viewsIns = this.design.views
-    if (viewsIns.hitTest(e)) {
+    const sceneGraphIns = this.design.sceneGraph
+    if (sceneGraphIns.hitTest(e)) {
       this.design.canvas.Cursor.setCursor("no-drop")
     } else {
       this.design.canvas.Cursor.setCursor("default")
@@ -49,10 +49,10 @@ export class DrawViewTool implements IBaseTool {
         y: this.startPoint.y
       }
       this.drawView = new View(attrs, opts, this.design)
-      viewsIns.appendView(this.drawView)
+      sceneGraphIns.appendView(this.drawView)
     }
     this.__is_dragging = true
-    viewsIns.updateView({
+    sceneGraphIns.updateView({
       startPoint: this.startPoint,
       lastPoint: this.lastPoint,
     }, this.drawView, this.__is_dragging)
@@ -61,9 +61,10 @@ export class DrawViewTool implements IBaseTool {
 
   onEnd = (e: PointerEvent) => {
     e.stopPropagation()
-    const viewsIns = this.design.views
+    if(!this.__is_draw || !this.__is_dragging) return 
+    const sceneGraphIns = this.design.sceneGraph
     this.design.activeTool("select")
-    viewsIns.updateView({
+    sceneGraphIns.updateView({
       startPoint: this.startPoint,
       lastPoint: this.lastPoint,
     }, this.drawView, this.__is_dragging)

@@ -29,8 +29,8 @@ export default class DesignEvents {
     window.addEventListener("keydown", this.keyDown)
     window.addEventListener("keyup", this.keyUp)
     canvas.addEventListener('pointerdown', this.pointerDown);
-    canvas.addEventListener('pointermove', this.pointerMove);
-    canvas.addEventListener('pointerup', this.pointerUp);
+    window.addEventListener('pointermove', this.pointerMove);
+    window.addEventListener('pointerup', this.pointerUp);
     window.addEventListener('wheel', this.whidowWheel, {
       passive: false,
     });

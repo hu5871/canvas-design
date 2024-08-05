@@ -186,7 +186,7 @@ export default class Canvas {
     ctx.scale(dpr * zoom, dpr * zoom);
     ctx.translate(dx, dy);
 
-    this.design.views.draw()
+    this.design.sceneGraph.draw()
     ctx.save();
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.scale(dpr, dpr);

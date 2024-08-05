@@ -1,9 +1,10 @@
-import { type ToolType } from './../tool/index';
+import { type ToolType } from '../tool/index';
 import { Tool } from "../tool";
 import Design from "../index";
 import { IPoint, IRect, IView } from "../types";
 
 import { View } from './view';
+import EventEmitter from '../events/eventEmitter';
 
 /**
  * normalize rect,
@@ -25,9 +26,18 @@ export const getRectByTwoPoint = (point1: IPoint, point2: IPoint): IRect => {
   };
 };
 
-export default class Views {
+
+interface EmitEvents {
+  selectTemplate(rect: IRect|null): void;
+  watchRect(rect:IRect|null) :void
+  [key: string | symbol]: (...args: any[]) => void
+}
+
+export default class SceneGraph {
+  private emitter = new EventEmitter<EmitEvents>()
   views: View[] = []
   public tool: Tool = new Tool(this.design)
+  currentSelectedView:View | undefined=undefined
   constructor(private design: Design) {
     this.registerEvent()
   }
@@ -54,6 +64,17 @@ export default class Views {
     this.tool.onEnd(e)
   }
 
+  setCurrent(view:View|undefined){
+    if(this.currentSelectedView  === view) return 
+    this.currentSelectedView= view
+    this.emitter.emit("selectTemplate",view ? {...view?.getRect()} : null)
+    this.design.render()
+  }
+
+  emitWatchRect(rect:IRect){
+    this.emitter.emit("watchRect",rect)
+  }
+
 
   // 更新模版
   updateView(
@@ -68,17 +89,20 @@ export default class Views {
       return
     }
     const { x, y } = lastPoint;
-    let width = x - startX;
-    let height = y - startY;
+    let width = +(x - startX).toFixed(2);
+    let height = +(y - startY).toFixed(2);
     if (width === 0 || height === 0) {
       return
     }
-    const rect = normalizeRect({ x: startX, y: startY, width, height })
+    const rect = normalizeRect({ x: +startX.toFixed(2), y: +startY.toFixed(2), width, height })
     viewInfo.updateAttrs(rect)
   }
 
   draw() {
     this.views.forEach(item => item.draw())
+    if(this.currentSelectedView){
+      this.currentSelectedView.drawOutLine()
+    }
   }
 
   hitTest(e: MouseEvent) {
@@ -87,6 +111,15 @@ export default class Views {
 
   appendView(view: View) {
     this.views.push(view)
+  }
+
+
+  on<K extends keyof EmitEvents>(eventName: K, handler: EmitEvents[K]) {
+    this.emitter.on(eventName, handler);
+  }
+
+  off<K extends keyof EmitEvents>(eventName: K, handler: EmitEvents[K]) {
+    this.emitter.off(eventName, handler);
   }
 
 }
