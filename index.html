@@ -34,15 +34,22 @@
     <script type="text/babel">
       function App() {
         const { useEffect, useRef, useState } = React
-        const { NavigationArrowIcon, ArtboardIcon } = TDesignIconReact
+        const {
+          NavigationArrowIcon,
+          ArtboardIcon,
+          ChevronRightIcon,
+          ChevronLeftIcon,
+        } = TDesignIconReact
         const Layout = TDesign.Layout
         const { Header, Content, Footer, Aside } = TDesign.Layout
-        const { Row, Col, Button } = TDesign
+        const { Row, Col, Button, Drawer } = TDesign
         const [design, setDesign] = useState(null)
         const [currentTool, setTool] = useState('select')
         const [rect, setRect] = useState(null)
         const [menu, setMenu] = useState([])
         const [contextPoint, setContextPoint] = useState(null)
+        const [launchedTree, setLaunchedTree] = useState(true)
+        const [launchedAttrs, setLaunchedAttrs] = useState(true)
 
         function handlePoint(e) {
           setContextPoint(e)
@@ -128,9 +135,34 @@
                 </div>
               </Header>
               <Layout>
-                <Aside className="border-r-2"></Aside>
+                <Drawer
+                  style={{ top: '54px' }}
+                  header={false}
+                  size={launchedTree ? '220px' : '50px'}
+                  closeBtn={false}
+                  placement="left"
+                  visible={true}
+                  showOverlay={false}
+                >
+                  <div className="flex h-full">
+                    {launchedTree ? <div className="flex-1">1</div> : null}
+                    <div className="h-full w-[28px] hover:opacity-100 opacity-0 animate-pulse flex items-center justify-center">
+                      {launchedTree ? (
+                        <ChevronLeftIcon
+                          onClick={() => setLaunchedTree(false)}
+                          size="28px"
+                        />
+                      ) : (
+                        <ChevronRightIcon
+                          onClick={() => setLaunchedTree(true)}
+                          size="28px"
+                        />
+                      )}
+                    </div>
+                  </div>
+                </Drawer>
                 <Layout className="">
-                  <Content >
+                  <Content>
                     <div id="design" style={{ height: '100%' }}></div>
                     {menu && contextPoint ? (
                       <div
@@ -139,7 +171,8 @@
                         onClick={closeMenu}
                       >
                         <div
-                          className={`absolute top-[${contextPoint?.y}px] left-[${contextPoint?.x}px] w-[200px] bg-[red] z-[100]`} onClick={handlerMenuClick}
+                          className={`absolute top-[${contextPoint?.y}px] left-[${contextPoint?.x}px] w-[200px] bg-[red] z-[100]`}
+                          onClick={handlerMenuClick}
                         >
                           {menu.map((item) => {
                             return (
@@ -153,7 +186,7 @@
                                   theme="default"
                                   variant="outline"
                                 >
-                                {item.disabled}
+                                  {item.disabled}
                                   {item.label}
                                 </Button>
                               </div>
@@ -163,20 +196,47 @@
                       </div>
                     ) : null}
                   </Content>
-                  <Aside width={'300px'}>
-                    {rect ? (
-                      <>
-                        <Row gutter={0}>
-                          <Col span={6}>x：{rect?.x}</Col>
-                          <Col span={6}>y：{rect?.y}</Col>
-                        </Row>
-                        <Row>
-                          <Col span={6}>width：{rect?.width}</Col>
-                          <Col span={6}>height：{rect?.height}</Col>
-                        </Row>
-                      </>
-                    ) : null}
-                  </Aside>
+                  <Drawer
+                    style={{ top: '54px' }}
+                    header={false}
+                    size={launchedAttrs ? '320px' : '50px'}
+                    closeBtn={false}
+                    placement="right"
+                    visible={true}
+                    showOverlay={false}
+                  >
+                    <div className="flex flex-row-reverse h-full">
+                      {launchedAttrs ? (
+                        <div className="flex-1">
+                          {rect ? (
+                            <>
+                              <Row gutter={0}>
+                                <Col span={6}>x：{rect?.x}</Col>
+                                <Col span={6}>y：{rect?.y}</Col>
+                              </Row>
+                              <Row>
+                                <Col span={6}>width：{rect?.width}</Col>
+                                <Col span={6}>height：{rect?.height}</Col>
+                              </Row>
+                            </>
+                          ) : null}
+                        </div>
+                      ) : null}
+                      <div className="h-full w-[28px] hover:opacity-100 opacity-0 animate-pulse flex items-center justify-center">
+                        {launchedAttrs ? (
+                          <ChevronRightIcon
+                            onClick={() => setLaunchedAttrs(false)}
+                            size="28px"
+                          />
+                        ) : (
+                          <ChevronLeftIcon
+                            onClick={() => setLaunchedAttrs(true)}
+                            size="28px"
+                          />
+                        )}
+                      </div>
+                    </div>
+                  </Drawer>
                 </Layout>
               </Layout>
             </Layout>
