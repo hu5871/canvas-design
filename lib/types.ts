@@ -35,7 +35,7 @@ export interface IAppendViewRect{
 }
 
 export interface IConfig{
-  view:{
+  template:{
     width: number;
     height: number;
   }
@@ -50,7 +50,7 @@ export type DeepRequired<T> = {
 export type WithRequired<T, K extends keyof T> = Omit<T, K> & Required<Pick<T, K>>;
 
 
-export interface IViewAttrs {
+export interface ITemplateAttrs {
   __version: string;
   __id: string
   width: number;

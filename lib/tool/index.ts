@@ -1,7 +1,7 @@
 import Design from "../index";
 import EventEmitter from "../events/eventEmitter";
 import { SelectedTool } from "./select";
-import { DrawViewTool } from "./draw/draw_view";
+import { DrawTemplateTool } from "./draw/draw_template";
 import { ITool, IToolClassConstructor } from "./tpyes";
 
 export const toolType = ["DRAWVIEW", "select"] as const;
@@ -22,7 +22,7 @@ export class Tool {
 
   constructor(private design: Design) {
     this.registerTool(SelectedTool as any)
-    this.registerTool(DrawViewTool as any)
+    this.registerTool(DrawTemplateTool as any)
 
     this.setAction(SelectedTool.type)
   }

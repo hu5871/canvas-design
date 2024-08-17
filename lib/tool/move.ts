@@ -23,7 +23,7 @@ export class Move  implements IBaseTool{
   onStart(e:PointerEvent){
     this.startPoint = this.design.canvas.getSceneCursorXY(e);
     const sceneGraph = this.design.sceneGraph
-    const selectItem = sceneGraph.currentSelectedView
+    const selectItem = sceneGraph.currentSelectedTemplate
     this.startLocalPosition=selectItem?.getLocalPosition()
   }
 
@@ -40,7 +40,7 @@ export class Move  implements IBaseTool{
     let dy = y - this.startPoint!.y;
     const sceneGraph = this.design.sceneGraph
 
-    const selectItem = sceneGraph.currentSelectedView
+    const selectItem = sceneGraph.currentSelectedTemplate
 
     const startLocalPosition= this.startLocalPosition
     selectItem?.updateAttrs({

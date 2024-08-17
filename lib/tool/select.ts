@@ -26,16 +26,16 @@ export class SelectedTool implements ITool {
     this.startPoint = this.design.canvas.getSceneCursorXY(e);
     const sceneGraph = this.design.sceneGraph
     //选中模版
-    const hitView = sceneGraph.hitTest(e)
-    sceneGraph.setCurrent(hitView)
+    const curTemp= sceneGraph.hitTest(e)
+    sceneGraph.setCurrent(curTemp)
     
 
-    if (hitView) {
+    if (curTemp) {
       this.currStrategy = this.strategyMove;
     }
 
 
-    if (this.currStrategy && sceneGraph.currentSelectedView) {
+    if (this.currStrategy && sceneGraph.currentSelectedTemplate) {
       this.currStrategy.onActive();
       this.currStrategy.onStart(e);
     }
@@ -43,13 +43,13 @@ export class SelectedTool implements ITool {
 
   onDrag(e: PointerEvent) {
     const sceneGraph = this.design.sceneGraph
-    if (this.currStrategy && sceneGraph.currentSelectedView) {
+    if (this.currStrategy && sceneGraph.currentSelectedTemplate) {
       this.currStrategy.onDrag(e);
     }
   }
   onEnd(e: PointerEvent) {
     const sceneGraph = this.design.sceneGraph
-    if (this.currStrategy && sceneGraph.currentSelectedView) {
+    if (this.currStrategy && sceneGraph.currentSelectedTemplate) {
       this.currStrategy.onEnd(e);
     }
   }

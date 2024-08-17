@@ -1,6 +1,6 @@
 import Design from "..";
 import { identityMatrix } from "../geo/geo_matrix";
-import {  IRect, IViewAttrs, WithRequired } from "../types";
+import {  IRect, ITemplateAttrs, WithRequired } from "../types";
 import getDpr from "../utils/dpr";
 import { omit } from "../utils/omit";
 import { UniqueId } from "../utils/uuid";
@@ -44,10 +44,10 @@ const SAVE = 0b0010;  // 2 表示保存状态
 const LOCK = 0b0100;  // 4 表示锁定状态
 
 
-export class View {
-  attrs: IViewAttrs
+export class Template {
+  attrs: ITemplateAttrs
   constructor(
-    attrs: WithRequired<Partial<IViewAttrs>, 'width' | 'height'>,
+    attrs: WithRequired<Partial<ITemplateAttrs>, 'width' | 'height'>,
     opts: Pick<IRect, 'x' | 'y'>,
     private design: Design
   ) {
@@ -72,7 +72,7 @@ export class View {
     }
   }
 
-  updateAttrs(partialAttrs: Partial<IViewAttrs & IRect>) {
+  updateAttrs(partialAttrs: Partial<ITemplateAttrs & IRect>) {
     if (!partialAttrs.transform) {
       if (partialAttrs.x !== undefined) {
         this.attrs.transform[4] = +(partialAttrs.x).toFixed(2);
@@ -82,10 +82,10 @@ export class View {
       }
     }
 
-    partialAttrs = omit(partialAttrs, 'x', 'y') as Partial<IViewAttrs>
+    partialAttrs = omit(partialAttrs, 'x', 'y') as Partial<ITemplateAttrs>
     for (const key in partialAttrs) {
-      if (partialAttrs[key as keyof IViewAttrs] !== undefined) {
-        (this.attrs as any)[key as keyof IViewAttrs] = partialAttrs[key as keyof IViewAttrs]
+      if (partialAttrs[key as keyof ITemplateAttrs] !== undefined) {
+        (this.attrs as any)[key as keyof ITemplateAttrs] = partialAttrs[key as keyof ITemplateAttrs]
       }
     }
     this.design.sceneGraph.emitWatchRect({ ...this.getRect() })
@@ -204,12 +204,16 @@ export class View {
     ctx.restore();
   }
 
+  getJson(){
+    return {...this.attrs}
+  }
+
 
   getLocalPosition() {
     return { x: this.attrs.transform[4], y: this.attrs.transform[5] };
   }
 
-  hitView = (e: MouseEvent): Boolean => {
+  hit = (e: MouseEvent): Boolean => {
     const { x: cx, y: cy } = this.design.canvas.getSceneCursorXY(e)
     const { x, y } = this.getLocalPosition()
     const { width, height } = this.attrs

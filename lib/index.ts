@@ -10,6 +10,7 @@ import Zoom from "./zoom";
 
 interface IOps {
   target: string;
+
 }
 
 interface EmitEvents {
@@ -35,6 +36,12 @@ class Design {
     this.canvas.render()
   }
 
+
+  getJson(){
+    return this.sceneGraph.templates.map(item=>{
+      return {...item.getJson()}
+    })
+  }
   
   
   activeTool(type:ToolType){

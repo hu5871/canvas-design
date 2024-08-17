@@ -4,7 +4,7 @@ import { cloneDeep } from "./utils/deepClone"
 
 
 const defaultConfig:IConfig ={
-  view:{
+  template:{
     width:300,
     height:200
   }

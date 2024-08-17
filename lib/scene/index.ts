@@ -1,9 +1,9 @@
 import { type ToolType } from '../tool/index';
 import { Tool } from "../tool";
 import Design from "../index";
-import { IPoint, IRect, IViewAttrs } from "../types";
+import { IPoint, IRect, ITemplateAttrs } from "../types";
 
-import { IMenuItem, View } from './view';
+import { IMenuItem, Template } from './template';
 import EventEmitter from '../events/eventEmitter';
 
 /**
@@ -37,9 +37,9 @@ interface EmitEvents {
 
 export default class SceneGraph {
   private emitter = new EventEmitter<EmitEvents>()
-  views: View[] = []
+  templates: Template[] = []
   public tool: Tool = new Tool(this.design)
-  currentSelectedView: View | undefined = undefined
+  currentSelectedTemplate: Template | undefined = undefined
   constructor(private design: Design) {
     this.registerEvent()
   }
@@ -52,9 +52,9 @@ export default class SceneGraph {
   }
 
   contextmenu = (e: MouseEvent) => {
-    this.currentSelectedView = this.hitTest(e)
+    this.currentSelectedTemplate = this.hitTest(e)
     this.emitter.emit("contentmenu",  {x:e.clientX,y:e.clientY})
-    this.emitMenu(this.currentSelectedView?.getMenu())
+    this.emitMenu(this.currentSelectedTemplate?.getMenu())
   }
 
 
@@ -78,10 +78,10 @@ export default class SceneGraph {
     this.tool.onEnd(e)
   }
 
-  setCurrent(view: View | undefined) {
-    if (this.currentSelectedView === view) return
-    this.currentSelectedView = view
-    this.emitter.emit("selectTemplate", view ? { ...view?.getRect() } : null)
+  setCurrent(temp: Template | undefined) {
+    if (this.currentSelectedTemplate === temp) return
+    this.currentSelectedTemplate = temp
+    this.emitter.emit("selectTemplate", temp ? { ...temp?.getRect() } : null)
     this.design.render()
   }
 
@@ -94,20 +94,20 @@ export default class SceneGraph {
   }
 
   activeMenu(type:string){
-    this.currentSelectedView?.activeMenu(type)
+    this.currentSelectedTemplate?.activeMenu(type)
   }
 
 
   // 更新模版
-  updateView(
+  updateTemplate(
     { startPoint, lastPoint }: { startPoint: IPoint, lastPoint: IPoint },
-    curView: View | null,
+    curTemp: Template | null,
     isDragging: boolean) {
-    let viewInfo: View | null = curView
+    let tempInfo: Template | null = curTemp
     const { x: startX, y: startY } = startPoint;
-    if (!isDragging || !viewInfo) {
-      const { width, height } = this.design.setting.settingConfig.view
-      this.appendView(new View({ width, height }, { x: startX, y: startY }, this.design))
+    if (!isDragging || !tempInfo) {
+      const { width, height } = this.design.setting.settingConfig.template
+      this.appendTemplate(new Template({ width, height }, { x: startX, y: startY }, this.design))
       return
     }
     const { x, y } = lastPoint;
@@ -117,23 +117,23 @@ export default class SceneGraph {
       return
     }
     const rect = normalizeRect({ x: +startX.toFixed(2), y: +startY.toFixed(2), width, height })
-    viewInfo.updateAttrs(rect)
+    tempInfo.updateAttrs(rect)
   }
 
   draw() {
-    this.views.forEach(item => item.draw())
-    if (this.currentSelectedView) {
-      this.currentSelectedView.drawOutLine()
+    this.templates.forEach(item => item.draw())
+    if (this.currentSelectedTemplate) {
+      this.currentSelectedTemplate.drawOutLine()
 
     }
   }
 
   hitTest(e: MouseEvent) {
-    return this.views.find(item => item.hitView(e))
+    return this.templates.find(item => item.hit(e))
   }
 
-  appendView(view: View) {
-    this.views.push(view)
+  appendTemplate(temp: Template) {
+    this.templates.push(temp)
   }
 
 

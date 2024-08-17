@@ -1,15 +1,15 @@
 import Design from "../..";
 import { IPoint } from "../../types";
-import { View } from "../../scene/view";
+import { Template } from "../../scene/template";
 import { IBaseTool } from "../tpyes";
 
-export class DrawViewTool implements IBaseTool {
-  static type="DRAWVIEW"
+export class DrawTemplateTool implements IBaseTool {
+  static type="DRAWTEMPLATE"
   startPoint: IPoint = { x: -1, y: -1 };
   lastPoint: IPoint = { x: -1, y: -1 };
   private __is_draw: boolean = false
   private __is_dragging: boolean = false
-  private drawView: View | null = null
+  private drawTemplate: Template | null = null
   constructor(private design: Design) {
   }
 
@@ -24,7 +24,7 @@ export class DrawViewTool implements IBaseTool {
     if (sceneGraphIns.hitTest(e)) return
     this.__is_draw = true
     this.__is_dragging = false
-    this.drawView = null
+    this.drawTemplate = null
     this.startPoint = this.design.canvas.getSceneCursorXY(e)
   }
 
@@ -39,7 +39,7 @@ export class DrawViewTool implements IBaseTool {
     if (!this.__is_draw) return
 
     this.lastPoint = this.design.canvas.getSceneCursorXY(e)
-    if (!this.drawView) {
+    if (!this.drawTemplate) {
       const attrs = {
         width: 0,
         height: 0
@@ -48,14 +48,14 @@ export class DrawViewTool implements IBaseTool {
         x: this.startPoint.x,
         y: this.startPoint.y
       }
-      this.drawView = new View(attrs, opts, this.design)
-      sceneGraphIns.appendView(this.drawView)
+      this.drawTemplate = new Template(attrs, opts, this.design)
+      sceneGraphIns.appendTemplate(this.drawTemplate)
     }
     this.__is_dragging = true
-    sceneGraphIns.updateView({
+    sceneGraphIns.updateTemplate({
       startPoint: this.startPoint,
       lastPoint: this.lastPoint,
-    }, this.drawView, this.__is_dragging)
+    }, this.drawTemplate, this.__is_dragging)
     this.design.canvas.render()
   }
 
@@ -64,13 +64,13 @@ export class DrawViewTool implements IBaseTool {
     if(!this.__is_draw || !this.__is_dragging) return 
     const sceneGraphIns = this.design.sceneGraph
     this.design.activeTool("select")
-    sceneGraphIns.updateView({
+    sceneGraphIns.updateTemplate({
       startPoint: this.startPoint,
       lastPoint: this.lastPoint,
-    }, this.drawView, this.__is_dragging)
+    }, this.drawTemplate, this.__is_dragging)
     this.__is_draw = false
     this.__is_dragging = false
-    this.drawView = null
+    this.drawTemplate = null
     this.design.canvas.render()
   }
 }

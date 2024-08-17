@@ -21,10 +21,10 @@ export default class DesignEvents {
   private emitter = new EventEmitter<DesignEvent>()
   private dragCanvas: DragCanvas = new DragCanvas(this.design, this)
   constructor(private design: Design) {
-    this.listendragView(design.canvas.canvasElement)
+    this.listendragTemp(design.canvas.canvasElement)
   }
 
-  private listendragView(canvas: HTMLCanvasElement) {
+  private listendragTemp(canvas: HTMLCanvasElement) {
     canvas.addEventListener('wheel', this.canvasWheel);
     canvas.addEventListener('dblclick', this.canvasdbClick);
     window.addEventListener("keydown", this.keyDown)
