@@ -1,9 +1,9 @@
 import { type ToolType } from '../tool/index';
 import { Tool } from "../tool";
 import Design from "../index";
-import { IPoint, IRect, IView } from "../types";
+import { IPoint, IRect, IViewAttrs } from "../types";
 
-import { View } from './view';
+import { IMenuItem, View } from './view';
 import EventEmitter from '../events/eventEmitter';
 
 /**
@@ -28,8 +28,10 @@ export const getRectByTwoPoint = (point1: IPoint, point2: IPoint): IRect => {
 
 
 interface EmitEvents {
-  selectTemplate(rect: IRect|null): void;
-  watchRect(rect:IRect|null) :void
+  selectTemplate(rect: IRect | null): void;
+  watchRect(rect: IRect | null): void
+  contextmenu(): void
+  getMenuList(emnu:IMenuItem[]|undefined):void
   [key: string | symbol]: (...args: any[]) => void
 }
 
@@ -37,7 +39,7 @@ export default class SceneGraph {
   private emitter = new EventEmitter<EmitEvents>()
   views: View[] = []
   public tool: Tool = new Tool(this.design)
-  currentSelectedView:View | undefined=undefined
+  currentSelectedView: View | undefined = undefined
   constructor(private design: Design) {
     this.registerEvent()
   }
@@ -46,11 +48,23 @@ export default class SceneGraph {
     this.design.designEvents.on("dbclick", this.onDblclick)
     this.design.designEvents.on("pointerMove", this.onDrag)
     this.design.designEvents.on("pointerUp", this.onEnd)
+    this.design.designEvents.on("contextmenu", this.contextmenu)
   }
+
+  contextmenu = (e: MouseEvent) => {
+    this.currentSelectedView = this.hitTest(e)
+    this.emitter.emit("contentmenu",  {x:e.clientX,y:e.clientY})
+    this.emitMenu(this.currentSelectedView?.getMenu())
+  }
+
+
+
+
+
   onDblclick = (e: MouseEvent) => {
   }
 
-  activeTool(tool:ToolType){
+  activeTool(tool: ToolType) {
     this.tool.setAction(tool)
   }
 
@@ -64,15 +78,23 @@ export default class SceneGraph {
     this.tool.onEnd(e)
   }
 
-  setCurrent(view:View|undefined){
-    if(this.currentSelectedView  === view) return 
-    this.currentSelectedView= view
-    this.emitter.emit("selectTemplate",view ? {...view?.getRect()} : null)
+  setCurrent(view: View | undefined) {
+    if (this.currentSelectedView === view) return
+    this.currentSelectedView = view
+    this.emitter.emit("selectTemplate", view ? { ...view?.getRect() } : null)
     this.design.render()
   }
 
-  emitWatchRect(rect:IRect){
-    this.emitter.emit("watchRect",rect)
+  emitWatchRect(rect: IRect) {
+    this.emitter.emit("watchRect", rect)
+  }
+
+  emitMenu(menu:IMenuItem[] | undefined){
+    this.emitter.emit("getMenuList",menu)
+  }
+
+  activeMenu(type:string){
+    this.currentSelectedView?.activeMenu(type)
   }
 
 
@@ -100,8 +122,9 @@ export default class SceneGraph {
 
   draw() {
     this.views.forEach(item => item.draw())
-    if(this.currentSelectedView){
+    if (this.currentSelectedView) {
       this.currentSelectedView.drawOutLine()
+
     }
   }
 

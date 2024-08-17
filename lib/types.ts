@@ -50,15 +50,17 @@ export type DeepRequired<T> = {
 export type WithRequired<T, K extends keyof T> = Omit<T, K> & Required<Pick<T, K>>;
 
 
-export interface IView {
+export interface IViewAttrs {
   __version: string;
   __id: string
   width: number;
   height: number;
-  lock: boolean;
+  state:number;
   transform: IMatrixArr,
-  scale: number;
 }
+
+
+
 
 export type IMatrixArr = [
   a: number,
@@ -68,3 +70,5 @@ export type IMatrixArr = [
   tx: number,
   ty: number,
 ];
+
+

@@ -37,10 +37,16 @@
         const { NavigationArrowIcon, ArtboardIcon } = TDesignIconReact
         const Layout = TDesign.Layout
         const { Header, Content, Footer, Aside } = TDesign.Layout
-        const { Row, Col } = TDesign
+        const { Row, Col, Button } = TDesign
         const [design, setDesign] = useState(null)
         const [currentTool, setTool] = useState('select')
         const [rect, setRect] = useState(null)
+        const [menu, setMenu] = useState([])
+        const [contextPoint, setContextPoint] = useState(null)
+
+        function handlePoint(e) {
+          setContextPoint(e)
+        }
 
         useEffect(() => {
           let designIns = new Design({
@@ -50,6 +56,8 @@
           designIns.sceneGraph.tool.on('onChange', setTool)
           designIns.sceneGraph.on('selectTemplate', setRect)
           designIns.sceneGraph.on('watchRect', setRect)
+          designIns.sceneGraph.on('contentmenu', handlePoint)
+          designIns.sceneGraph.on('getMenuList', setMenu)
 
           return () => {
             setDesign(null)
@@ -58,6 +66,22 @@
 
         function changeTool(tool) {
           design.activeTool(tool)
+        }
+
+        function handlerMenuClick(e, type) {
+          e.preventDefault()
+          e.stopPropagation()
+          design.sceneGraph.activeMenu(type)
+        }
+
+        function closeMenu(e) {
+          e.preventDefault()
+          e.stopPropagation()
+          setMenu(undefined)
+        }
+
+        function maskContextMenu(e) {
+          e.preventDefault()
         }
         return (
           <>
@@ -105,9 +129,39 @@
               </Header>
               <Layout>
                 <Aside className="border-r-2"></Aside>
-                <Layout>
-                  <Content>
+                <Layout className="">
+                  <Content >
                     <div id="design" style={{ height: '100%' }}></div>
+                    {menu && contextPoint ? (
+                      <div
+                        className="fixed top-0 bottom-0 left-0 right-0 z-0  "
+                        onContextMenu={maskContextMenu}
+                        onClick={closeMenu}
+                      >
+                        <div
+                          className={`absolute top-[${contextPoint?.y}px] left-[${contextPoint?.x}px] w-[200px] bg-[red] z-[100]`} onClick={handlerMenuClick}
+                        >
+                          {menu.map((item) => {
+                            return (
+                              <div>
+                                <Button
+                                  onClick={(e) =>
+                                    handlerMenuClick(e, item.type)
+                                  }
+                                  disabled={item.disabled}
+                                  className="w-full rounded-none"
+                                  theme="default"
+                                  variant="outline"
+                                >
+                                {item.disabled}
+                                  {item.label}
+                                </Button>
+                              </div>
+                            )
+                          })}
+                        </div>
+                      </div>
+                    ) : null}
                   </Content>
                   <Aside width={'300px'}>
                     {rect ? (

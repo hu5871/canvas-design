@@ -1,15 +1,53 @@
 import Design from "..";
 import { identityMatrix } from "../geo/geo_matrix";
-import { IRect, IView, WithRequired } from "../types";
+import {  IRect, IViewAttrs, WithRequired } from "../types";
 import getDpr from "../utils/dpr";
 import { omit } from "../utils/omit";
 import { UniqueId } from "../utils/uuid";
 
 
+
+const menuList: IMenuItem[] = [
+  {
+    type: 'edit',
+    label: "编辑",
+    disabled: false
+  },
+  {
+    type: 'save',
+    label: "保存",
+    disabled: false
+  },
+  {
+    type: 'lock',
+    label: "锁定",
+    disabled: false
+  },
+  {
+    type: 'unLock',
+    label: "取消锁定",
+    disabled: false
+  }
+]
+
+export interface IMenuItem {
+  type: string;
+  label: string;
+  disabled: boolean;
+}
+
+
+let STATE = 0;
+
+const EDIT = 0b0001;  // 1 表示编辑状态
+const SAVE = 0b0010;  // 2 表示保存状态
+const LOCK = 0b0100;  // 4 表示锁定状态
+
+
 export class View {
-  attrs: IView
+  attrs: IViewAttrs
   constructor(
-    attrs: WithRequired<Partial<IView>, 'width' | 'height'>,
+    attrs: WithRequired<Partial<IViewAttrs>, 'width' | 'height'>,
     opts: Pick<IRect, 'x' | 'y'>,
     private design: Design
   ) {
@@ -30,12 +68,11 @@ export class View {
       width: attrs.width,
       height: attrs.height,
       transform: transform,
-      lock: attrs.lock ?? false,
-      scale: attrs.scale ?? 1
+      state: attrs.state ?? STATE,
     }
   }
 
-  updateAttrs(partialAttrs: Partial<IView & IRect>) {
+  updateAttrs(partialAttrs: Partial<IViewAttrs & IRect>) {
     if (!partialAttrs.transform) {
       if (partialAttrs.x !== undefined) {
         this.attrs.transform[4] = +(partialAttrs.x).toFixed(2);
@@ -45,17 +82,96 @@ export class View {
       }
     }
 
-    partialAttrs = omit(partialAttrs, 'x', 'y') as Partial<IView>
+    partialAttrs = omit(partialAttrs, 'x', 'y') as Partial<IViewAttrs>
     for (const key in partialAttrs) {
-      if (partialAttrs[key as keyof IView] !== undefined) {
-        (this.attrs as any)[key as keyof IView] = +(partialAttrs[key as keyof IView]! as number).toFixed(2)
+      if (partialAttrs[key as keyof IViewAttrs] !== undefined) {
+        (this.attrs as any)[key as keyof IViewAttrs] = partialAttrs[key as keyof IViewAttrs]
       }
     }
-
-
-    this.design.sceneGraph.emitWatchRect({...this.getRect()})
+    this.design.sceneGraph.emitWatchRect({ ...this.getRect() })
 
   }
+
+  // 切换编辑状态
+  toggleEdit() {
+    let state = this.attrs.state
+    if (!(state & LOCK)) {  // 仅在未锁定状态下可编辑
+      state |= EDIT;   // 进入编辑状态
+      this.updateAttrs({ state })
+    } else {
+      console.error('当前锁定状态，无法编辑');
+    }
+  }
+
+  // 切换保存状态
+  toggleSave() {
+    let state = this.attrs.state
+    if (!(state & LOCK)) {  // 仅在未锁定且未编辑状态下可保存
+      state |= SAVE;          // 进入保存状态
+      state &= ~EDIT;         // 保存后退出编辑状态
+      this.updateAttrs({ state })
+    } else {
+      console.error('当前锁定或编辑状态，无法保存');
+    }
+  }
+
+  // 切换锁定状态
+  toggleLock() {
+    let state = this.attrs.state
+    if (!(state & EDIT)) {  // 仅在未编辑状态下可锁定
+      state |= LOCK;        // 进入锁定状态
+      state &= ~(EDIT | SAVE);  // 清除编辑和保存状态
+      this.updateAttrs({ state })
+    } else {
+      console.error('当前编辑状态，无法锁定');
+    }
+  }
+
+  // 取消锁定
+  toggleUnlock() {
+    let state = this.attrs.state
+    if (state & LOCK) {     // 仅在锁定状态下可取消锁定
+      state &= ~(LOCK|SAVE|SAVE);       // 解除状态
+      this.updateAttrs({ state })
+    } else {
+      console.error('当前未锁定状态，无法解除锁定');
+    }
+  }
+
+
+  getMenu(): IMenuItem[] {
+    const state = this.attrs.state
+    const stateMap: Record<IMenuItem['type'], boolean> = {
+      edit: !!(state & EDIT) || !!(state & LOCK), // 编辑状态中或锁定状态下不可用
+      lock: !!(state & EDIT) || !!(state & LOCK) ,// 锁定状态下保存按钮禁用
+      save:  !!(state & LOCK),// 编辑状态中或锁定状态下不可用
+      'unLock': !(state & LOCK)// 仅在锁定状态下可用
+    }
+    return menuList.map(item => {
+      item.disabled=stateMap[item.type]
+       return item
+    });
+  }
+
+  activeMenu(type: string) {
+    const state = this.attrs.state
+    switch (type) {
+      case 'edit':
+        this.toggleEdit()
+        break
+      case 'lock':
+        this.toggleLock()
+        break
+      case 'save':
+        this.toggleSave()
+        break
+      case 'unLock':
+        this.toggleUnlock()
+        break
+    }
+    this.design.sceneGraph.emitMenu(undefined)
+  }
+
 
   getRect() {
     return {

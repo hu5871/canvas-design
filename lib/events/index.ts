@@ -14,6 +14,7 @@ export interface DesignEvent {
   whidowWheel(e: WheelEvent): void
   keyDown(e: KeyboardEvent): void
   keyUp(e: KeyboardEvent): void
+  contextmenu(e: MouseEvent): void
 }
 
 export default class DesignEvents {
@@ -34,6 +35,12 @@ export default class DesignEvents {
     window.addEventListener('wheel', this.whidowWheel, {
       passive: false,
     });
+    canvas.addEventListener("contextmenu",this.contextmenu)
+  }
+
+  contextmenu=(e:MouseEvent)=>{
+    e.preventDefault();
+    this.emitter.emit("contextmenu", e)
   }
 
 
