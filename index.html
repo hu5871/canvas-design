@@ -25,11 +25,49 @@
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/tdesign-react/dist/tdesign.min.js"></script>
     <script src="https://unpkg.com/tdesign-icons-react@0.3.4/dist/index.min.js"></script>
-
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="./dist/index.umd.js"></script>
     <script>
-      console.log(window)
+      const useDrag = (id, design) => {
+        let canvasEl = null
+        let type = undefined
+
+        const dragenter = (e) => {
+        }
+        const dragover = (e) => {
+          e.preventDefault()
+        }
+        const dragleave = (e) => {
+        }
+        const drop = (e) => {
+          design.sceneGraph.dragTarget(e,type)
+        }
+        function onDragStart(e, item) {
+          if (!canvasEl) {
+            canvasEl = document.querySelector(id)
+          }
+          canvasEl?.addEventListener('dragenter', dragenter, true) //进入元素区域
+          canvasEl?.addEventListener('dragover', dragover) //经过元素
+          canvasEl?.addEventListener('dragleave', dragleave) //离开
+          canvasEl?.addEventListener('drop', drop) //松手
+          type = item
+        }
+
+        function onDragEnd(e, item) {
+          if (!canvasEl) {
+            return false
+          }
+          canvasEl.removeEventListener('dragenter', dragenter)
+          canvasEl.removeEventListener('dragover', dragover)
+          canvasEl.removeEventListener('dragleave', dragleave)
+          canvasEl.removeEventListener('drop', drop)
+        }
+
+        return {
+          onDragStart,
+          onDragEnd,
+        }
+      }
     </script>
     <script type="text/babel">
       function App() {
@@ -51,23 +89,28 @@
         const [launchedTree, setLaunchedTree] = useState(true)
         const [launchedAttrs, setLaunchedAttrs] = useState(true)
 
+        const { onDragStart: dragStart, onDragEnd: dragEnd } = useDrag(
+          '#design',
+          design
+        )
+
         function handlePoint(e) {
           setContextPoint(e)
         }
 
         useEffect(() => {
-          const data= JSON.parse(localStorage.getItem('data')?? [])
+          const data = JSON.parse(localStorage.getItem('data') ?? `[]`)
           let designIns = new Design({
             target: '#design',
+            data,
           })
+
           setDesign(designIns)
           designIns.sceneGraph.tool.on('onChange', setTool)
           designIns.sceneGraph.on('selectTemplate', setRect)
           designIns.sceneGraph.on('watchRect', setRect)
           designIns.sceneGraph.on('contentmenu', handlePoint)
           designIns.sceneGraph.on('getMenuList', setMenu)
-
-         
 
           return () => {
             setDesign(null)
@@ -94,11 +137,13 @@
           e.preventDefault()
         }
 
-        function saveJson(){
-          const data=design.getJson()
-          console.log(data)
-          localStorage.setItem('data',JSON.stringify(data))
+        function saveJson() {
+          const data = design.getJson()
+          localStorage.setItem('data', JSON.stringify(data))
         }
+
+        const onDragstart = (e, type) => dragStart(e, type)
+        const onDragend = (e, type) => dragEnd(e, type)
         return (
           <>
             <Layout>
@@ -130,9 +175,9 @@
                       theme="default"
                     >
                       <div
-                        onClick={() => changeTool('DRAWVIEW')}
+                        onClick={() => changeTool('DRAWTEMPLATE')}
                         className={`w-[40px] h-[40px]  rounded flex justify-center items-center ${
-                          currentTool === 'DRAWVIEW'
+                          currentTool === 'DRAWTEMPLATE'
                             ? 'bg-[#38bdf8] text-white'
                             : ''
                         }`}
@@ -140,11 +185,14 @@
                         <ArtboardIcon className=" w-[20px!important] h-[20px!important]" />
                       </div>
                     </TDesign.Tooltip>
-
-
                   </TDesign.Space>
 
-                  <button onClick={saveJson}  className="absolute right-[120px]  active:opacity-60   w-[80px] p-[8px] bg-[#38bdf8] text-white rounded">保存</button>
+                  <button
+                    onClick={saveJson}
+                    className="absolute right-[120px]  active:opacity-60   w-[80px] p-[8px] bg-[#38bdf8] text-white rounded"
+                  >
+                    保存
+                  </button>
                 </div>
               </Header>
               <Layout>
@@ -157,8 +205,26 @@
                   visible={true}
                   showOverlay={false}
                 >
-                  <div className="flex h-full">
-                    {launchedTree ? <div className="flex-1">1</div> : null}
+                  <div className="flex w-full h-full">
+                    {launchedTree ? (
+                      <div className="flex-1 grid grid-cols-2 gap-[16px]">
+                        <div
+                          draggable
+                          onDragStart={(e) => onDragstart(e, 'Text')}
+                          className="h-[40px] border border-[#38bdf8] rounded flex justify-center items-center"
+                        >
+                          文本
+                        </div>
+
+                        <div
+                          draggable
+                          onDragStart={(e) => onDragstart(e, 'image')}
+                          className="h-[40px] border border-[#38bdf8] rounded  flex justify-center items-center"
+                        >
+                          图片
+                        </div>
+                      </div>
+                    ) : null}
                     <div className="h-full w-[28px] hover:opacity-100 opacity-0 animate-pulse flex items-center justify-center">
                       {launchedTree ? (
                         <ChevronLeftIcon
@@ -209,48 +275,49 @@
                       </div>
                     ) : null}
                   </Content>
-                  <Drawer
-                    style={{ top: '54px' }}
-                    header={false}
-                    size={launchedAttrs ? '320px' : '50px'}
-                    closeBtn={false}
-                    placement="right"
-                    visible={true}
-                    showOverlay={false}
-                  >
-                    <div className="flex flex-row-reverse h-full">
-                      {launchedAttrs ? (
-                        <div className="flex-1">
-                          {rect ? (
-                            <>
-                              <Row gutter={0}>
-                                <Col span={6}>x：{rect?.x}</Col>
-                                <Col span={6}>y：{rect?.y}</Col>
-                              </Row>
-                              <Row>
-                                <Col span={6}>width：{rect?.width}</Col>
-                                <Col span={6}>height：{rect?.height}</Col>
-                              </Row>
-                            </>
-                          ) : null}
-                        </div>
-                      ) : null}
-                      <div className="h-full w-[28px] hover:opacity-100 opacity-0 animate-pulse flex items-center justify-center">
-                        {launchedAttrs ? (
-                          <ChevronRightIcon
-                            onClick={() => setLaunchedAttrs(false)}
-                            size="28px"
-                          />
-                        ) : (
-                          <ChevronLeftIcon
-                            onClick={() => setLaunchedAttrs(true)}
-                            size="28px"
-                          />
-                        )}
-                      </div>
-                    </div>
-                  </Drawer>
                 </Layout>
+
+                <Drawer
+                  style={{ top: '54px' }}
+                  header={false}
+                  size={launchedAttrs ? '320px' : '50px'}
+                  closeBtn={false}
+                  placement="right"
+                  visible={true}
+                  showOverlay={false}
+                >
+                  <div className="flex flex-row-reverse h-full">
+                    {launchedAttrs ? (
+                      <div className="flex-1">
+                        {rect ? (
+                          <>
+                            <Row gutter={0}>
+                              <Col span={6}>x：{rect?.x}</Col>
+                              <Col span={6}>y：{rect?.y}</Col>
+                            </Row>
+                            <Row>
+                              <Col span={6}>width：{rect?.width}</Col>
+                              <Col span={6}>height：{rect?.height}</Col>
+                            </Row>
+                          </>
+                        ) : null}
+                      </div>
+                    ) : null}
+                    <div className="h-full w-[28px] hover:opacity-100 opacity-0 animate-pulse flex items-center justify-center">
+                      {launchedAttrs ? (
+                        <ChevronRightIcon
+                          onClick={() => setLaunchedAttrs(false)}
+                          size="28px"
+                        />
+                      ) : (
+                        <ChevronLeftIcon
+                          onClick={() => setLaunchedAttrs(true)}
+                          size="28px"
+                        />
+                      )}
+                    </div>
+                  </div>
+                </Drawer>
               </Layout>
             </Layout>
           </>

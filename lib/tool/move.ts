@@ -1,5 +1,6 @@
 import Design from "..";
 import { IPoint } from "../types";
+import { EDIT, LOCK } from "./menu";
 import { IBaseTool } from "./tpyes";
 
 
@@ -9,6 +10,7 @@ export class Move  implements IBaseTool{
   private lastPoint: IPoint | null = null;
   private dragPoint: IPoint | null = null;
   startLocalPosition: { x: number; y: number; } | undefined;
+  startChildLocalPosition : {x:number;y:number}[] | undefined
 
   constructor(private design:Design){
     
@@ -25,6 +27,9 @@ export class Move  implements IBaseTool{
     const sceneGraph = this.design.sceneGraph
     const selectItem = sceneGraph.currentSelectedTemplate
     this.startLocalPosition=selectItem?.getLocalPosition()
+    this.startChildLocalPosition=selectItem?.childrenGraphics?.map(graphics=>{
+      return graphics.getLocalPosition()
+    })
   }
 
   onDrag(e:PointerEvent){
@@ -40,14 +45,30 @@ export class Move  implements IBaseTool{
     let dy = y - this.startPoint!.y;
     const sceneGraph = this.design.sceneGraph
 
-    const selectItem = sceneGraph.currentSelectedTemplate
+    const selectTemp = sceneGraph.currentSelectedTemplate
 
+    // 锁定不可拖拽模版或者子图形
+    if(!selectTemp || selectTemp.attrs.state & LOCK) return 
+
+    if(selectTemp.attrs.state & EDIT ) {
+      //编辑
+      
+      return 
+    }
     const startLocalPosition= this.startLocalPosition
-    selectItem?.updateAttrs({
+    selectTemp?.updateAttrs({
       x: startLocalPosition!.x + dx ,
       y: startLocalPosition!.y + dy 
     });
 
+    // 更新子图形的属性
+    for (let i = 0; i < selectTemp.childrenGraphics.length; i++) {
+      const graphics = selectTemp.childrenGraphics[i];
+      graphics.updateAttrs({
+        x: this.startChildLocalPosition![i]!.x + dx ,
+        y: this.startChildLocalPosition![i]!.y + dy 
+      })
+    }
     this.design.render();
 
   }
@@ -55,6 +76,7 @@ export class Move  implements IBaseTool{
     this.dragPoint = null;
     this.startPoint=null
     this.startLocalPosition=undefined
+    this.startChildLocalPosition=undefined
 
   }
 }

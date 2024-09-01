@@ -1,3 +1,6 @@
+import { ITextStyle } from "./components/text/type";
+import { GraphicsType, IComponentAttrs } from "./components/types";
+
 export interface IPoint {
   x: number;
   y: number;
@@ -38,6 +41,14 @@ export interface IConfig{
   template:{
     width: number;
     height: number;
+  },
+  components:{
+    [GraphicsType.Text]:{
+      type:string;
+      width:number;
+      height:number;
+      style:ITextStyle
+    }
   }
 }
 
@@ -50,18 +61,24 @@ export type DeepRequired<T> = {
 export type WithRequired<T, K extends keyof T> = Omit<T, K> & Required<Pick<T, K>>;
 
 
-export interface ITemplateAttrs {
+export interface IGraphicsAttrs{
   __version: string;
   __id: string
   width: number;
   height: number;
   state:number;
-  transform: IMatrixArr,
+  transform: IMatrixArr;
+  type:GraphicsType
+}
+export interface ITemplateAttrs extends  IGraphicsAttrs{
+  children: IComponentAttrs[]
 }
 
-
-
-
+ /**
+   * | a | c | tx|
+   * | b | d | ty|
+   * | 0 | 0 | 1 |
+   */
 export type IMatrixArr = [
   a: number,
   b: number,
@@ -70,5 +87,6 @@ export type IMatrixArr = [
   tx: number,
   ty: number,
 ];
+
 
 

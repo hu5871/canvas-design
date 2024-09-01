@@ -27,11 +27,15 @@ export class SelectedTool implements ITool {
     const sceneGraph = this.design.sceneGraph
     //选中模版
     const curTemp= sceneGraph.hitTest(e)
-    sceneGraph.setCurrent(curTemp)
     
 
     if (curTemp) {
       this.currStrategy = this.strategyMove;
+      sceneGraph.setCurrent(curTemp)
+      const itemGraphics=curTemp.childrenGraphics.find(graphics=>{
+        return graphics.hit(e)
+      })
+      curTemp.setSelectItem(itemGraphics)
     }
 
 

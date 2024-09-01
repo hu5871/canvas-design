@@ -4,7 +4,7 @@ import { SelectedTool } from "./select";
 import { DrawTemplateTool } from "./draw/draw_template";
 import { ITool, IToolClassConstructor } from "./tpyes";
 
-export const toolType = ["DRAWVIEW", "select"] as const;
+export const toolType = ["DRAWTEMPLATE", "select"] as const;
 
 export type ToolType = typeof toolType[number];
 interface Event {
@@ -16,13 +16,15 @@ export class Tool {
   private emitter = new EventEmitter<Event>()
   private currentTool: ITool | null = null;
   private toolMap = new Map<string, IToolClassConstructor>()
+  
+  
   private enableToolTypes:string[]=[]
 
 
 
   constructor(private design: Design) {
-    this.registerTool(SelectedTool as any)
-    this.registerTool(DrawTemplateTool as any)
+    this.registerTool(SelectedTool)
+    this.registerTool(DrawTemplateTool)
 
     this.setAction(SelectedTool.type)
   }

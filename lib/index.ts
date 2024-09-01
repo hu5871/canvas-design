@@ -5,12 +5,13 @@ import { ToolType } from "./tool";
 import Settting from "./settting";
 import SceneGraph from "./scene/index";
 import Zoom from "./zoom";
+import { ITemplateAttrs } from "./types";
 
 
 
 interface IOps {
   target: string;
-
+  data:ITemplateAttrs[]
 }
 
 interface EmitEvents {
@@ -28,7 +29,7 @@ class Design {
   constructor(ops: IOps) {
     this.canvas = new Canvas(ops.target, this)
     this.designEvents = new DesignEvents(this);
-    this.sceneGraph = new SceneGraph(this)
+    this.sceneGraph = new SceneGraph(this,ops?.data??[])
     this.zoom = new Zoom(this)
     this.render()
   }
@@ -63,4 +64,7 @@ class Design {
 }
 
 
+
+
 export default Design
+

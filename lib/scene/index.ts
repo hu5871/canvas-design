@@ -3,8 +3,10 @@ import { Tool } from "../tool";
 import Design from "../index";
 import { IPoint, IRect, ITemplateAttrs } from "../types";
 
-import { IMenuItem, Template } from './template';
+import { Template } from './template';
 import EventEmitter from '../events/eventEmitter';
+import { EDIT, IMenuItem, Menu } from '../tool/menu';
+import { GraphicsType } from '../components/types';
 
 /**
  * normalize rect,
@@ -31,7 +33,7 @@ interface EmitEvents {
   selectTemplate(rect: IRect | null): void;
   watchRect(rect: IRect | null): void
   contextmenu(): void
-  getMenuList(emnu:IMenuItem[]|undefined):void
+  getMenuList(emnu: IMenuItem[] | undefined): void
   [key: string | symbol]: (...args: any[]) => void
 }
 
@@ -39,10 +41,21 @@ export default class SceneGraph {
   private emitter = new EventEmitter<EmitEvents>()
   templates: Template[] = []
   public tool: Tool = new Tool(this.design)
+  private menu: Menu = new Menu(this.design)
   currentSelectedTemplate: Template | undefined = undefined
-  constructor(private design: Design) {
+  editTemps: Template[] = []
+  constructor(private design: Design, data: ITemplateAttrs[]) {
     this.registerEvent()
+    data?.forEach(attrs => {
+      const { transform } = attrs
+      const tmp = new Template(attrs, { x: transform[4], y: transform[5] }, this.design)
+      this.appendTemplate(tmp)
+      if (attrs.state & EDIT) {
+        this.addEditTemp(tmp)
+      }
+    })
   }
+
   registerEvent() {
     this.design.designEvents.on("pointerDown", this.onStart)
     this.design.designEvents.on("dbclick", this.onDblclick)
@@ -53,12 +66,9 @@ export default class SceneGraph {
 
   contextmenu = (e: MouseEvent) => {
     this.currentSelectedTemplate = this.hitTest(e)
-    this.emitter.emit("contentmenu",  {x:e.clientX,y:e.clientY})
-    this.emitMenu(this.currentSelectedTemplate?.getMenu())
+    this.emitter.emit("contentmenu", { x: e.clientX, y: e.clientY })
+    this.emitMenu(this.menu?.getMenu())
   }
-
-
-
 
 
   onDblclick = (e: MouseEvent) => {
@@ -78,6 +88,10 @@ export default class SceneGraph {
     this.tool.onEnd(e)
   }
 
+  addEditTemp(temp: Template) {
+    this.editTemps.indexOf(temp) === -1 && this.editTemps.push(temp)
+  }
+
   setCurrent(temp: Template | undefined) {
     if (this.currentSelectedTemplate === temp) return
     this.currentSelectedTemplate = temp
@@ -89,12 +103,12 @@ export default class SceneGraph {
     this.emitter.emit("watchRect", rect)
   }
 
-  emitMenu(menu:IMenuItem[] | undefined){
-    this.emitter.emit("getMenuList",menu)
+  emitMenu(menu: IMenuItem[] | undefined) {
+    this.emitter.emit("getMenuList", menu)
   }
 
-  activeMenu(type:string){
-    this.currentSelectedTemplate?.activeMenu(type)
+  activeMenu(type: string) {
+    this.menu?.activeMenu(type)
   }
 
 
@@ -124,12 +138,21 @@ export default class SceneGraph {
     this.templates.forEach(item => item.draw())
     if (this.currentSelectedTemplate) {
       this.currentSelectedTemplate.drawOutLine()
-
     }
+    this.editTemps.forEach(tmp => {
+      tmp.drawOutLine()
+    })
   }
 
   hitTest(e: MouseEvent) {
     return this.templates.find(item => item.hit(e))
+  }
+
+  //创建业务图形
+  dragTarget(e: DragEvent,type:GraphicsType) {
+    const temp = this.editTemps.find(item => item.hit(e))
+    temp?.appednGraphics(type,e)
+    return 
   }
 
   appendTemplate(temp: Template) {
