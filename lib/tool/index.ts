@@ -2,9 +2,10 @@ import Design from "../index";
 import EventEmitter from "../events/eventEmitter";
 import { SelectedTool } from "./select";
 import { DrawTemplateTool } from "./draw/draw_template";
+import { DragTool } from "./drag";
 import { ITool, IToolClassConstructor } from "./tpyes";
 
-export const toolType = ["DRAWTEMPLATE", "select"] as const;
+export const toolType = ["DRAWTEMPLATE", "select",'drag'] as const;
 
 export type ToolType = typeof toolType[number];
 interface Event {
@@ -25,6 +26,7 @@ export class Tool {
   constructor(private design: Design) {
     this.registerTool(SelectedTool)
     this.registerTool(DrawTemplateTool)
+    this.registerTool(DragTool)
 
     this.setAction(SelectedTool.type)
   }

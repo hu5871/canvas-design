@@ -1,5 +1,5 @@
-import { ITextStyle } from "./components/text/type";
-import { GraphicsType, IComponentAttrs } from "./components/types";
+import { ITextStyle } from "./graphics/components/text/type";
+import { GraphicsType, IComponentAttrs } from "./graphics/components/types";
 
 export interface IPoint {
   x: number;

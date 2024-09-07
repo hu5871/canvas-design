@@ -9,8 +9,6 @@ export class Resize  implements IBaseTool{
   private handleName!: string;
   private lastPoint: IPoint | null = null;
   constructor(private design:Design){
-
-    
   }
 
   onActive(){

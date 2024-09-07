@@ -1,9 +1,16 @@
+import EventEmitter from "./events/eventEmitter";
 import Design from "./index";
 import { IPoint, IZoomConfig } from "./types";
 import { viewportCoordsToSceneUtil } from "./utils/common";
 
+
+interface EmitEvents {
+  [key: string | symbol]: (...args: any[]) => void
+  zoomChange(zoom: number): void;
+}
 class Zoom {
   private zoom = 1;
+  private emitter = new EventEmitter<EmitEvents>()
   config :IZoomConfig = {
     zoomStep: 0.2325,
     zoomMin: 0.015625,
@@ -29,6 +36,12 @@ class Zoom {
       zoom = zoomMin;
     }
     this.zoom = zoom;
+
+    Promise.resolve().then(() => {
+      // 异步通知
+      this.emitter.emit('zoomChange', zoom);
+    });
+
   }
 
   zoomOut(opts?: { center?: IPoint; enableLevel?: boolean }) {
@@ -94,6 +107,15 @@ class Zoom {
       x: newScrollX,
       y: newScrollY,
     });
+  }
+
+
+  on<K extends keyof EmitEvents>(eventName: K, handler: EmitEvents[K]) {
+    this.emitter.on(eventName, handler);
+  }
+
+  off<K extends keyof EmitEvents>(eventName: K, handler: EmitEvents[K]) {
+    this.emitter.off(eventName, handler);
   }
 }
 

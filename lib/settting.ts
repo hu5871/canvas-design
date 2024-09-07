@@ -1,4 +1,4 @@
-import { GraphicsType } from "./components/types"
+import { GraphicsType } from "./graphics/components/types"
 import { DeepRequired, IConfig } from "./types"
 import { cloneDeep } from "./utils/deepClone"
 

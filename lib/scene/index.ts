@@ -6,7 +6,7 @@ import { IPoint, IRect, ITemplateAttrs } from "../types";
 import { Template } from './template';
 import EventEmitter from '../events/eventEmitter';
 import { EDIT, IMenuItem, Menu } from '../tool/menu';
-import { GraphicsType } from '../components/types';
+import { GraphicsType } from '../graphics/components/types';
 
 /**
  * normalize rect,
@@ -57,11 +57,11 @@ export default class SceneGraph {
   }
 
   registerEvent() {
-    this.design.designEvents.on("pointerDown", this.onStart)
-    this.design.designEvents.on("dbclick", this.onDblclick)
-    this.design.designEvents.on("pointerMove", this.onDrag)
-    this.design.designEvents.on("pointerUp", this.onEnd)
-    this.design.designEvents.on("contextmenu", this.contextmenu)
+    this.design.designEvent.on("pointerDown", this.onStart)
+    this.design.designEvent.on("dblclick", this.onDblclick)
+    this.design.designEvent.on("pointerMove", this.onDrag)
+    this.design.designEvent.on("pointerUp", this.onEnd)
+    this.design.designEvent.on("contextmenu", this.contextmenu)
   }
 
   contextmenu = (e: MouseEvent) => {

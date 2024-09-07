@@ -1,5 +1,5 @@
-import Design from "..";
-import { IGraphicsAttrs, IPoint } from "../types";
+import Design from "../..";
+import { IGraphicsAttrs, IPoint } from "../../types";
 import { DrawText } from "./text";
 import { GraphicsType } from "./types";
 

@@ -1,11 +1,9 @@
-import { Tool } from '../tool';
-import { IPoint } from "../types";
 import Design from "../index";
 import { DragCanvas } from "./drag_canvas";
 import EventEmitter from './eventEmitter';
 
 
-export interface DesignEvent {
+export interface IDesignEvent {
   [key: string | symbol]: (...args: any[]) => void
   pointerdown(e: PointerEvent): void
   pointerMove(e: PointerEvent): void
@@ -15,11 +13,13 @@ export interface DesignEvent {
   keyDown(e: KeyboardEvent): void
   keyUp(e: KeyboardEvent): void
   contextmenu(e: MouseEvent): void
+  dblclick(e:MouseEvent):void
 }
 
-export default class DesignEvents {
-  private emitter = new EventEmitter<DesignEvent>()
-  private dragCanvas: DragCanvas = new DragCanvas(this.design, this)
+export default class DesignEvent {
+  private emitter = new EventEmitter<IDesignEvent>()
+  dragCanvas:DragCanvas = new DragCanvas(this.design,this)
+
   constructor(private design: Design) {
     this.listendragTemp(design.canvas.canvasElement)
   }
@@ -35,10 +35,12 @@ export default class DesignEvents {
     window.addEventListener('wheel', this.whidowWheel, {
       passive: false,
     });
-    canvas.addEventListener("contextmenu",this.contextmenu)
+    canvas.addEventListener("contextmenu", this.contextmenu)
+
+
   }
 
-  contextmenu=(e:MouseEvent)=>{
+  contextmenu = (e: MouseEvent) => {
     e.preventDefault();
     this.emitter.emit("contextmenu", e)
   }
@@ -66,20 +68,20 @@ export default class DesignEvents {
     this.emitter.emit("canvasWheel", e)
   }
   canvasdbClick = (e: MouseEvent) => {
-    this.emitter.emit("dbclick", e)
+    this.emitter.emit("dblclick", e)
   }
   whidowWheel = (e: WheelEvent) => {
     this.emitter.emit("whidowWheel", e)
   }
 
 
-  on<K extends keyof DesignEvent>(eventName: K, handler: DesignEvent[K]) {
+  on<K extends keyof IDesignEvent>(eventName: K, handler: IDesignEvent[K]) {
     this.emitter.on(eventName, handler);
   }
 
 
 
-  off<K extends keyof DesignEvent>(eventName: K, handler: DesignEvent[K]) {
+  off<K extends keyof IDesignEvent>(eventName: K, handler: IDesignEvent[K]) {
     this.emitter.off(eventName, handler);
   }
 

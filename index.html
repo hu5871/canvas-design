@@ -32,15 +32,13 @@
         let canvasEl = null
         let type = undefined
 
-        const dragenter = (e) => {
-        }
+        const dragenter = (e) => {}
         const dragover = (e) => {
           e.preventDefault()
         }
-        const dragleave = (e) => {
-        }
+        const dragleave = (e) => {}
         const drop = (e) => {
-          design.sceneGraph.dragTarget(e,type)
+          design.sceneGraph.dragTarget(e, type)
         }
         function onDragStart(e, item) {
           if (!canvasEl) {
@@ -77,14 +75,17 @@
           ArtboardIcon,
           ChevronRightIcon,
           ChevronLeftIcon,
+          ChevronDownIcon,
+          GestureRanslationIcon
         } = TDesignIconReact
         const Layout = TDesign.Layout
         const { Header, Content, Footer, Aside } = TDesign.Layout
-        const { Row, Col, Button, Drawer } = TDesign
+        const { Row, Col, Button, Drawer, Dropdown, Space } = TDesign
         const [design, setDesign] = useState(null)
         const [currentTool, setTool] = useState('select')
         const [rect, setRect] = useState(null)
         const [menu, setMenu] = useState([])
+        const [zoom, setZoom] = useState(1)
         const [contextPoint, setContextPoint] = useState(null)
         const [launchedTree, setLaunchedTree] = useState(true)
         const [launchedAttrs, setLaunchedAttrs] = useState(true)
@@ -98,6 +99,9 @@
           setContextPoint(e)
         }
 
+        function  zoomChange(zoom){
+          setZoom(zoom)
+        }
         useEffect(() => {
           const data = JSON.parse(localStorage.getItem('data') ?? `[]`)
           let designIns = new Design({
@@ -111,6 +115,7 @@
           designIns.sceneGraph.on('watchRect', setRect)
           designIns.sceneGraph.on('contentmenu', handlePoint)
           designIns.sceneGraph.on('getMenuList', setMenu)
+          designIns.zoom.on('zoomChange', zoomChange);
 
           return () => {
             setDesign(null)
@@ -144,13 +149,39 @@
 
         const onDragstart = (e, type) => dragStart(e, type)
         const onDragend = (e, type) => dragEnd(e, type)
+
+        const options = [
+          {
+            content: '放大 ctrl+',
+            value: 'add',
+          },
+
+          {
+            content: '缩小 ctrl-',
+            value: 'sub',
+          },
+        ]
+
+        const clickHandler = (data) => {
+          const type = data.value
+          switch (type) {
+            case 'add':
+              design?.zoom?.zoomIn({ isLevelZoom: true })
+              break
+            case 'sub':
+              design?.zoom?.zoomOut({ isLevelZoom: true })
+              break
+            default:
+              break
+          }
+        }
         return (
           <>
             <Layout>
               <Header className="border-b-2 ">
                 <div className="flex h-full items-center">
                   <div className="w-[100px] h-full"></div>
-                  <TDesign.Space>
+                  <Space>
                     <TDesign.Tooltip
                       content="选择"
                       destroyOnClose
@@ -185,14 +216,43 @@
                         <ArtboardIcon className=" w-[20px!important] h-[20px!important]" />
                       </div>
                     </TDesign.Tooltip>
-                  </TDesign.Space>
+                    <TDesign.Tooltip
+                      content="拖拽画布 H"
+                      destroyOnClose
+                      showArrow
+                      theme="default"
+                    >
+                      <div
+                        onClick={() => changeTool('drag')}
+                        className={`w-[40px] h-[40px]  rounded flex justify-center items-center ${
+                          currentTool === 'drag'
+                            ? 'bg-[#38bdf8] text-white'
+                            : ''
+                        }`}
+                      >
+                        <GestureRanslationIcon className=" w-[20px!important] h-[20px!important]" />
+                      </div>
+                    </TDesign.Tooltip>
+                  </Space>
 
-                  <button
-                    onClick={saveJson}
-                    className="absolute right-[120px]  active:opacity-60   w-[80px] p-[8px] bg-[#38bdf8] text-white rounded"
-                  >
-                    保存
-                  </button>
+                  <div className="absolute right-[20px]">
+                    <Space className="flex items-center">
+                      <button
+                        onClick={saveJson}
+                        className="  active:opacity-60   w-[80px] p-[8px] bg-[#38bdf8] text-white rounded"
+                      >
+                        保存
+                      </button>
+                      <Dropdown options={options} onClick={clickHandler}>
+                        <Button
+                          variant="text"
+                          suffix={<ChevronDownIcon size="16" />}
+                        >
+                          {Math.round(zoom * 100)}%
+                        </Button>
+                      </Dropdown>
+                    </Space>
+                  </div>
                 </div>
               </Header>
               <Layout>
@@ -242,7 +302,7 @@
                 </Drawer>
                 <Layout className="">
                   <Content>
-                    <div id="design" style={{ height: '100%' }}></div>
+                    <div id="design" style={{height:'100%'}}></div>
                     {menu && contextPoint ? (
                       <div
                         className="fixed top-0 bottom-0 left-0 right-0 z-0  "

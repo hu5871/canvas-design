@@ -1,6 +1,6 @@
 import Canvas from "./canvas";
 import EventEmitter from "./events/eventEmitter";
-import DesignEvents from "./events/index";
+import DesignEvent from "./events/index";
 import { ToolType } from "./tool";
 import Settting from "./settting";
 import SceneGraph from "./scene/index";
@@ -24,11 +24,13 @@ class Design {
   canvas: Canvas;
   zoom: Zoom;
   sceneGraph: SceneGraph;
-  designEvents: DesignEvents 
+  designEvent: DesignEvent
   setting = new Settting()
+
   constructor(ops: IOps) {
     this.canvas = new Canvas(ops.target, this)
-    this.designEvents = new DesignEvents(this);
+    this.designEvent = new DesignEvent(this);
+
     this.sceneGraph = new SceneGraph(this,ops?.data??[])
     this.zoom = new Zoom(this)
     this.render()

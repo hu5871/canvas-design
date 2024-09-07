@@ -52,7 +52,12 @@ export class Move  implements IBaseTool{
 
     if(selectTemp.attrs.state & EDIT ) {
       //编辑
-      
+      const index=selectTemp.childrenGraphics.findIndex(item=> item === selectTemp.selectItem)
+      selectTemp.selectItem?.updateAttrs({
+        x: this.startChildLocalPosition![index]!.x + dx ,
+        y: this.startChildLocalPosition![index]!.y + dy 
+      })
+      this.design.render();
       return 
     }
     const startLocalPosition= this.startLocalPosition

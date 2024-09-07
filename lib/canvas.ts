@@ -1,4 +1,5 @@
 import Cursor from "./cursor";
+import { DragCanvas } from "./events/drag_canvas";
 import Design from "./index";
 import { IBox, IRect } from "./types";
 import getDpr from "./utils/dpr";
@@ -54,9 +55,7 @@ export default class Canvas {
   private scrollX = 0;// 视口的X滚动位置
   private scrollY = 0;// 视口的Y滚动位置
   Cursor: Cursor
-
   constructor(private target: string, private design: Design) {
-
     this.width = 0
     this.height = 0
     this.canvasElement = document.createElement("canvas")
@@ -66,9 +65,14 @@ export default class Canvas {
   }
 
 
+  translate(dx: number, dy: number){
+    this.scrollX += dx;
+    this.scrollY += dy;
+  }
+
   //初始化视口
   initView() {
-    const target = document.querySelector(this.target) as HTMLCanvasElement
+    const target = document.querySelector(this.target) as HTMLDivElement
     target?.appendChild(this.canvasElement)
     const width = this.width = target?.clientWidth || 0
     const height = this.height = target?.clientHeight || 0
@@ -81,6 +85,7 @@ export default class Canvas {
     }
     if (height !== undefined) {
       this.canvasElement.height = height * dpr;
+      console.log(this.canvasElement.height)
       this.canvasElement.style.height = height + 'px';
     }
     this.offsetX = x

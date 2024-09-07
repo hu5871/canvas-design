@@ -1,8 +1,8 @@
 import Design from "..";
-import { Graphics } from "../common/graphics";
-import { createComponent } from "../components";
-import { DrawText } from "../components/text";
-import { GraphicsType, IComponentAttrs } from "../components/types";
+import { Graphics } from "../graphics/graphics";
+import { createComponent } from "../graphics/components";
+import { DrawText } from "../graphics/components/text";
+import { GraphicsType, IComponentAttrs } from "../graphics/components/types";
 import { IRect, ITemplateAttrs, WithRequired } from "../types";
 import getDpr from "../utils/dpr";
 import { hitRect } from "../utils/hitTest";
@@ -68,13 +68,13 @@ export class Template extends Graphics<ITemplateAttrs> {
     ctx.fillStyle = "#FFFFFF";
     ctx.fill();
     ctx.clip();
-    ctx.closePath()
-    ctx.restore();
 
     this.childrenGraphics?.forEach(graphics => {
       graphics.draw()
     })
-    this.selectItem?.drawOutLine()
+    ctx.closePath()
+    ctx.restore();
+    // this.selectItem?.drawOutLine()
   }
 
 
