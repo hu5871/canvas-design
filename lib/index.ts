@@ -6,6 +6,7 @@ import Settting from "./settting";
 import SceneGraph from "./scene/index";
 import Zoom from "./zoom";
 import { ITemplateAttrs } from "./types";
+import { Store } from "./store";
 
 
 
@@ -21,6 +22,7 @@ interface EmitEvents {
 
 class Design {
   private emitter = new EventEmitter<EmitEvents>()
+  store:Store= new Store()
   canvas: Canvas;
   zoom: Zoom;
   sceneGraph: SceneGraph;
@@ -54,6 +56,11 @@ class Design {
 
   getTools(){
     return this.sceneGraph
+  }
+
+
+  destroy(){
+    this.designEvent.destroy()
   }
 
   on<K extends keyof EmitEvents>(eventName: K, handler: EmitEvents[K]) {

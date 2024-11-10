@@ -3,56 +3,66 @@ import { Graphics } from "../graphics/graphics";
 import { createComponent } from "../graphics/components";
 import { DrawText } from "../graphics/components/text";
 import { GraphicsType, IComponentAttrs } from "../graphics/components/types";
-import { IRect, ITemplateAttrs, WithRequired } from "../types";
+import { IGraphicsOpts, IPoint, IRect, ITemplateAttrs, Optional, } from "../types";
 import getDpr from "../utils/dpr";
-import { hitRect } from "../utils/hitTest";
+import { isPointInTransformedRect } from "../utils/hitTest";
+import { applyMatrix, invertMatrix } from "../geo/geo_matrix";
+import { EDIT } from "../tool/menu";
 
 export class Template extends Graphics<ITemplateAttrs> {
-  selectItem:Graphics|null= null
+
   constructor(
-    attrs: WithRequired<Partial<ITemplateAttrs>, 'width' | 'height'>,
-    opts: Pick<IRect, 'x' | 'y'>,
-    design: Design
+    attrs: Optional<ITemplateAttrs, 'state' | '__id' | 'transform' | 'type' | 'field'>,
+    design: Design,
+    opts?: IGraphicsOpts,
   ) {
     super(attrs, design, opts)
-    
   }
 
-  override customAttrs(attrs: WithRequired<Partial<ITemplateAttrs>, 'width' | 'height'>) {
+  isEdit() {
+    return Boolean(this.attrs.state & EDIT)
+  }
+
+  override customAttrs(attrs: Optional<ITemplateAttrs, 'state' | '__id' | 'transform' | 'field'>) {
     this.attrs.children = attrs?.children ?? []
     this.attrs.children?.map(childAttrs => {
-      const comp = createComponent(this.design,childAttrs.type,childAttrs)
+      const comp = createComponent(this.design, childAttrs.type, childAttrs)
       this.childrenGraphics.push(comp!)
     })
   }
 
   setChild(attrs: IComponentAttrs) {
-    this.attrs.children.push(attrs)
+    this.attrs?.children?.push(attrs)
   }
 
-  appednGraphics(type: GraphicsType, e: DragEvent) {
-    const { x: cx, y: cy } = this.design.canvas.getSceneCursorXY(e)
-    const comp = createComponent(this.design,type,null, { x: cx, y: cy })
-    if (!comp) return
-    this.childrenGraphics.push(comp!)
-    this.setChild(comp.getJson())
-    this.design.render()
+  addGraphics(graphics: Graphics) {
+    if (!this.isEdit()) {
+      //非编辑状态
+      this.design.sceneGraph.tool.editFail("未编辑模版，创建图形失败")
+      return false
+    }
+    this.childrenGraphics.push(graphics!)
+    this.setChild(graphics.getJson())
+    return true
   }
 
-  override hit (e: MouseEvent): Boolean  {
-    const scenePoint = this.design.canvas.getSceneCursorXY(e)
-    const localPoint = this.getLocalPosition()
+
+  override hitTest(point: IPoint): boolean {
     const { width, height } = this.attrs
-    return hitRect(scenePoint,localPoint,{width,height})
+    return isPointInTransformedRect(point,{
+      width,
+      height,
+      transform:this.getWorldTransform()
+    })
   }
 
 
-   override getJson(): ITemplateAttrs {
-    const children= this.childrenGraphics.map(item=>{
-      return {...item.getJson()}
+  override getJson(): ITemplateAttrs {
+    const children = this.childrenGraphics.map(item => {
+      return { ...item.getJson() }
     })
-    
-    return {...this.attrs,children}
+
+    return { ...this.attrs, children }
   }
 
 
@@ -61,6 +71,7 @@ export class Template extends Graphics<ITemplateAttrs> {
     const ctx = this.design.canvas.ctx
     const attrs = this.attrs;
     const { transform } = this.attrs;
+
     ctx.save();
     ctx.transform(...transform);
     ctx.beginPath();
@@ -68,20 +79,26 @@ export class Template extends Graphics<ITemplateAttrs> {
     ctx.fillStyle = "#FFFFFF";
     ctx.fill();
     ctx.clip();
-
     this.childrenGraphics?.forEach(graphics => {
       graphics.draw()
     })
-    ctx.closePath()
     ctx.restore();
-    // this.selectItem?.drawOutLine()
   }
 
-
-
-  setSelectItem(graphics:Graphics|undefined){
-    this.selectItem=graphics ?? null
-    this.design.render()
+  override drawOutLine() {
+    const ctx = this.design.canvas.ctx;
+    const zoom = this.design.zoom.getZoom();
+    let strokeWidth = 1 * zoom;
+    ctx.save();
+    const { width, height, transform } = this.attrs;
+    ctx.transform(...this.getWorldTransform());
+    ctx.strokeStyle = "#38bdf8";
+    ctx.lineWidth = strokeWidth;
+    ctx.beginPath();
+    ctx.rect(0, 0, width, height);
+    ctx.stroke();
+    ctx.closePath();
+    ctx.restore();
   }
 
 }

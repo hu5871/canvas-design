@@ -4,6 +4,7 @@ import { SelectedTool } from "./select";
 import { DrawTemplateTool } from "./draw/draw_template";
 import { DragTool } from "./drag";
 import { ITool, IToolClassConstructor } from "./tpyes";
+import { DrawTextTool } from "./draw/draw_Text";
 
 export const toolType = ["DRAWTEMPLATE", "select",'drag'] as const;
 
@@ -11,21 +12,19 @@ export type ToolType = typeof toolType[number];
 interface Event {
   [key: string | symbol]: (...args: any[]) => void
   onChange(tool: string): void
+  editFail(msg:string):void
 }
 
 export class Tool {
   private emitter = new EventEmitter<Event>()
   private currentTool: ITool | null = null;
   private toolMap = new Map<string, IToolClassConstructor>()
-  
-  
   private enableToolTypes:string[]=[]
-
-
 
   constructor(private design: Design) {
     this.registerTool(SelectedTool)
     this.registerTool(DrawTemplateTool)
+    this.registerTool(DrawTextTool)
     this.registerTool(DragTool)
 
     this.setAction(SelectedTool.type)
@@ -35,6 +34,11 @@ export class Tool {
   private registerTool(toolCtor: IToolClassConstructor) {
     const type = toolCtor.type
     this.toolMap.set(type, toolCtor)
+  }
+
+
+  editFail(msg:string){
+    this.emitter.emit("editFail", msg)
   }
 
 
@@ -52,7 +56,6 @@ export class Tool {
 
   onStart = (e: PointerEvent) => {
     this.currentTool?.onStart(e)
-
   }
   onDrag = (e: PointerEvent) => {
     this.currentTool?.onDrag(e)

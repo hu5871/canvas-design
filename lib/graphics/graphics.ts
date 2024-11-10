@@ -1,9 +1,16 @@
 import Design from "..";
-import { identityMatrix } from "../geo/geo_matrix";
-import { IGraphicsAttrs, IMatrixArr, IRect, WithRequired } from "../types";
+import { ControlHandle } from "../control_handle_manager/handler";
+import { calcRectBbox } from "../geo";
+import { Matrix, applyMatrix, identityMatrix, invertMatrix } from "../geo/geo_matrix";
+import { normalizeRect } from "../scene";
+import { IAdvancedAttrs, IBox, IGraphicsAttrs, IGraphicsOpts, IMatrixArr, IPoint, IRect, Optional } from "../types";
+import { cloneDeep } from "../utils/loadsh";
 import getDpr from "../utils/dpr";
+import { isPointInTransformedRect } from "../utils/hitTest";
 import { omit } from "../utils/omit";
 import { UniqueId } from "../utils/uuid";
+import { getTransformAngle } from "../geo/geo_angle";
+import { recomputeTransformRect } from "../geo/geo_rect";
 
 let STATE = 0;
 
@@ -28,15 +35,16 @@ export class Graphics<ATTRS extends IGraphicsAttrs = IGraphicsAttrs> {
   childrenGraphics: Graphics[] = []
   attrs: ATTRS;
   design: Design;
+  private noCollectUpdate: boolean;
   constructor(
-    attrs: WithRequired<Partial<ATTRS>, 'width' | 'height'>,
+    attrs: Optional<ATTRS, 'state'|'__id'|'transform'|'type'|'field'>,
     design: Design,
-    opts?: Pick<IRect, 'x' | 'y'>,
+    opts?: IGraphicsOpts,
   ) {
     this.design = design
     const { v } = design.setting
     const transform = attrs?.transform || identityMatrix()
-    const advancedAttrs = opts;
+    const advancedAttrs = opts?.advancedAttrs;
     if (advancedAttrs && !attrs.transform) {
       if (advancedAttrs.x !== undefined) {
         transform[4] = advancedAttrs.x;
@@ -50,21 +58,42 @@ export class Graphics<ATTRS extends IGraphicsAttrs = IGraphicsAttrs> {
     this.attrs.__id = attrs.__id ?? UniqueId();
     this.attrs.transform = transform;
     this.attrs.state = attrs.state ?? STATE;
+    this.noCollectUpdate=Boolean(opts?.noCollectUpdate)
     this.customAttrs(attrs)
   }
 
 
-  customAttrs(_: WithRequired<Partial<ATTRS>, 'width' | 'height'>) {
+  customAttrs(_: Optional<ATTRS, 'state'|'__id'|'transform'|'type'|'field'>) {
+  }
+
+  getWorldTransform(): IMatrixArr {
+    const parent = this.getParent();
+    if (parent) {
+      return multiplyMatrix(parent.getWorldTransform(), this.attrs.transform);
+    }
+    return [...this.attrs.transform];
   }
 
 
-  updateAttrs(partialAttrs: Partial<ATTRS & IRect>) {
+  isVisible(){
+    return this.attrs.visible ?? true;
+  }
+
+  getParent(){
+    return  this.design.sceneGraph.getParent(this.attrs.__id as string);
+  }
+
+  getId(){
+    return this.attrs.__id
+  }
+
+  updateAttrs(partialAttrs: Partial<IGraphicsAttrs > & IAdvancedAttrs) {
     if (!partialAttrs.transform) {
       if (partialAttrs.x !== undefined) {
-        this.attrs.transform[4] = +(partialAttrs.x).toFixed(2);
+        this.attrs.transform[4] = (partialAttrs.x)
       }
       if (partialAttrs.y !== undefined) {
-        this.attrs.transform[5] = +(partialAttrs.y).toFixed(2);
+        this.attrs.transform[5] = (partialAttrs.y)
       }
     }
 
@@ -74,8 +103,14 @@ export class Graphics<ATTRS extends IGraphicsAttrs = IGraphicsAttrs> {
         (this.attrs as any)[key as keyof ATTRS] = attrs[key as keyof ATTRS]
       }
     }
-    this.design.sceneGraph.emitWatchRect({ ...this.getRect() })
+  }
 
+
+  getBbox(): Readonly<IBox> {
+    return calcRectBbox({
+      ...this.getSize(),
+      transform: this.getWorldTransform(),
+    });
   }
 
 
@@ -88,35 +123,99 @@ export class Graphics<ATTRS extends IGraphicsAttrs = IGraphicsAttrs> {
     return { x: this.attrs.transform[4], y: this.attrs.transform[5] };
   }
 
+  getRotate() {
+    return getTransformAngle(this.getWorldTransform());
+  }
+
+  setRotate(newRotate: number, center?: IPoint) {
+    const rotate = this.getRotate();
+    const delta = newRotate - rotate;
+    center ??= this.getWorldCenter();
+    const rotateMatrix = new Matrix()
+      .translate(-center.x, -center.y)
+      .rotate(delta)
+      .translate(center.x, center.y);
+    this.prependWorldTransform(rotateMatrix.getArray());
+  }
+
+  dRotate(dRotation: number, originWorldTf: IMatrixArr, center: IPoint) {
+    const rotateMatrix = new Matrix()
+      .translate(-center.x, -center.y)
+      .rotate(dRotation)
+      .translate(center.x, center.y);
+
+    const newWoldTf = rotateMatrix
+      .append(new Matrix(...originWorldTf))
+      .getArray();
+
+    this.setWorldTransform(newWoldTf);
+  }
+
+  prependWorldTransform(m: IMatrixArr) {
+    const parentTf = this.getParentWorldTransform();
+    const tf = multiplyMatrix(
+      m,
+      multiplyMatrix(parentTf, this.attrs.transform),
+    );
+    this.updateAttrs(
+      recomputeTransformRect({
+        ...this.getSize(),
+        transform: multiplyMatrix(invertMatrix(parentTf), tf),
+      }),
+    );
+  }
+
+  getWorldCenter(): IPoint {
+    const tf = new Matrix(...this.getWorldTransform());
+    return tf.apply({
+      x: this.attrs.width / 2,
+      y: this.attrs.height / 2,
+    });
+  }
+
 
 
   drawOutLine() {
-    const ctx = this.design.canvas.ctx;
-    const dpr = getDpr();
-    const viewport = this.design.canvas.getViewPortRect();
-    const zoom = this.design.zoom.getZoom();
-    const dx = -viewport.x;
-    const dy = -viewport.y;
+    const { width, height } = this.attrs
+    const ctx = this.design.canvas.ctx
     ctx.save();
-    ctx.setTransform(1, 0, 0, 1, 0, 0);
-    ctx.scale(dpr * zoom, dpr * zoom);
-    ctx.translate(dx, dy);
-    let strokeWidth = 1 * zoom;
-    const { width, height, transform } = this.attrs;
-    ctx.transform(...transform);
-    ctx.strokeStyle = "#38bdf8";
-    ctx.lineWidth = strokeWidth;
     ctx.beginPath();
+    ctx.transform(...this.getWorldTransform());
+    ctx.strokeStyle = '#38bdf8';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([5]);
     ctx.rect(0, 0, width, height);
     ctx.stroke();
     ctx.closePath();
     ctx.restore();
   }
 
-  hit(e: MouseEvent) {
+  hitTest(point: IPoint, tol = 0) {
+    return isPointInTransformedRect(
+      point,
+      {
+        ...this.getSize(),
+        transform: this.getWorldTransform(),
+      },
+      tol,
+    );
   }
 
-  getRect() {
+
+  getParentWorldTransform() {
+    const parent = this.getParent();
+    return parent ? parent.getWorldTransform() : identityMatrix();
+  }
+
+  setWorldTransform(worldTf: IMatrixArr){
+    const parentTf = this.getParentWorldTransform();
+    const localTf = multiplyMatrix(invertMatrix(parentTf), worldTf);
+    this.updateAttrs({
+      transform: localTf,
+    });
+  }
+
+  getRect():IRect {
     return {
       ...this.getLocalPosition(),
       width: this.attrs.width,
@@ -124,10 +223,31 @@ export class Graphics<ATTRS extends IGraphicsAttrs = IGraphicsAttrs> {
     };
   }
 
+  getAttrs(): ATTRS {
+    return cloneDeep(this.attrs);
+  }
+
+  getSize(){
+    return {
+      width:this.attrs.width,
+      height:this.attrs.height
+    }
+  }
 
 
   draw() {
-
+  
   }
+
+
+  cancelCollectUpdate() {
+    this.noCollectUpdate = true;
+  }
+
+
+  getControlHandles(_zoom: number, _initial?: boolean): ControlHandle[] {
+    return [];
+  }
+
 
 }

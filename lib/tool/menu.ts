@@ -43,14 +43,17 @@ export class Menu implements IBaseTool {
 
   // 切换编辑状态
   toggleEdit() {
-    const tmp= this.design.sceneGraph.currentSelectedTemplate
+    const tmp= this.design.store.getTemp()
     if(!tmp) return 
     let state =tmp?.attrs.state
     if (!(state & LOCK)) {  // 仅在未锁定状态下可编辑
       state |= EDIT;   // 进入编辑状态
 
       tmp.updateAttrs({ state })
-      this.design.sceneGraph.addEditTemp(tmp)
+      this.design.store.add({
+        graphics:tmp,
+        parent:undefined
+      })
     } else {
       console.error('当前锁定状态，无法编辑');
     }
@@ -58,7 +61,7 @@ export class Menu implements IBaseTool {
 
   // 切换保存状态
   toggleSave() {
-    const tmp= this.design.sceneGraph.currentSelectedTemplate
+    const tmp= this.design.store.getTemp()
     if(!tmp) return 
     let state =tmp?.attrs.state
     if (!(state & LOCK)) {  // 仅在未锁定且未编辑状态下可保存
@@ -72,7 +75,7 @@ export class Menu implements IBaseTool {
 
   // 切换锁定状态
   toggleLock() {
-    const tmp= this.design.sceneGraph.currentSelectedTemplate
+     const tmp= this.design.store.getTemp()
     if(!tmp) return 
     let state =tmp?.attrs.state
     if (!(state & EDIT)) {  // 仅在未编辑状态下可锁定
@@ -86,7 +89,7 @@ export class Menu implements IBaseTool {
 
   // 取消锁定
   toggleUnlock() {
-    const tmp= this.design.sceneGraph.currentSelectedTemplate
+     const tmp= this.design.store.getTemp()
     if(!tmp) return 
     let state =tmp?.attrs.state
     if (state & LOCK) {     // 仅在锁定状态下可取消锁定
@@ -99,7 +102,7 @@ export class Menu implements IBaseTool {
 
 
   getMenu(): IMenuItem[] {
-    const tmp= this.design.sceneGraph.currentSelectedTemplate
+     const tmp= this.design.store.getTemp()
     if(!tmp) return []
     let state =tmp?.attrs.state
     const stateMap: Record<IMenuItem['type'], boolean> = {

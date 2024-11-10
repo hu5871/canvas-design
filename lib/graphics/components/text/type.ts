@@ -9,7 +9,6 @@ export  interface ITextAttrs  extends IComponentAttrs{
 export interface ITextStyle{
   fontSize: number;
   lineWidth: number;
-  fill: string;
   textBaseline:"alphabetic" | "bottom" | "hanging" | "ideographic" | "middle" | "top"
   padding:number[]
 }

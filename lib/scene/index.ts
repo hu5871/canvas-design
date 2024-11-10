@@ -2,11 +2,13 @@ import { type ToolType } from '../tool/index';
 import { Tool } from "../tool";
 import Design from "../index";
 import { IPoint, IRect, ITemplateAttrs } from "../types";
-
-import { Template } from './template';
+import {  Template } from './template';
 import EventEmitter from '../events/eventEmitter';
 import { EDIT, IMenuItem, Menu } from '../tool/menu';
-import { GraphicsType } from '../graphics/components/types';
+import { Store } from '../store';
+import { Graphics } from '../graphics/graphics';
+import { ControlHandleManager } from '../control_handle_manager';
+// import { createComponent } from '../graphics/components';
 
 /**
  * normalize rect,
@@ -42,37 +44,42 @@ export default class SceneGraph {
   templates: Template[] = []
   public tool: Tool = new Tool(this.design)
   private menu: Menu = new Menu(this.design)
-  currentSelectedTemplate: Template | undefined = undefined
-  editTemps: Template[] = []
+  controlHandleManager:ControlHandleManager
+
   constructor(private design: Design, data: ITemplateAttrs[]) {
     this.registerEvent()
+    this.controlHandleManager=new ControlHandleManager(design)
     data?.forEach(attrs => {
       const { transform } = attrs
-      const tmp = new Template(attrs, { x: transform[4], y: transform[5] }, this.design)
+      const tmp = new Template(attrs,  this.design,{
+        advancedAttrs:{ x: transform[4], y: transform[5] },
+      })
       this.appendTemplate(tmp)
       if (attrs.state & EDIT) {
-        this.addEditTemp(tmp)
+        this.design.store.add({
+          graphics:tmp,
+          parent:undefined
+        })
       }
     })
   }
 
+  getParent(childId:string){
+    return this.templates.find(item=> item.attrs.children?.some(child=> child.__id === childId))
+  }
+
   registerEvent() {
     this.design.designEvent.on("pointerDown", this.onStart)
-    this.design.designEvent.on("dblclick", this.onDblclick)
     this.design.designEvent.on("pointerMove", this.onDrag)
     this.design.designEvent.on("pointerUp", this.onEnd)
     this.design.designEvent.on("contextmenu", this.contextmenu)
   }
 
   contextmenu = (e: MouseEvent) => {
-    this.currentSelectedTemplate = this.hitTest(e)
     this.emitter.emit("contentmenu", { x: e.clientX, y: e.clientY })
     this.emitMenu(this.menu?.getMenu())
   }
 
-
-  onDblclick = (e: MouseEvent) => {
-  }
 
   activeTool(tool: ToolType) {
     this.tool.setAction(tool)
@@ -88,18 +95,8 @@ export default class SceneGraph {
     this.tool.onEnd(e)
   }
 
-  addEditTemp(temp: Template) {
-    this.editTemps.indexOf(temp) === -1 && this.editTemps.push(temp)
-  }
 
-  setCurrent(temp: Template | undefined) {
-    if (this.currentSelectedTemplate === temp) return
-    this.currentSelectedTemplate = temp
-    this.emitter.emit("selectTemplate", temp ? { ...temp?.getRect() } : null)
-    this.design.render()
-  }
-
-  emitWatchRect(rect: IRect) {
+  emitWatchRect(rect: IRect|null) {
     this.emitter.emit("watchRect", rect)
   }
 
@@ -112,48 +109,17 @@ export default class SceneGraph {
   }
 
 
-  // 更新模版
-  updateTemplate(
-    { startPoint, lastPoint }: { startPoint: IPoint, lastPoint: IPoint },
-    curTemp: Template | null,
-    isDragging: boolean) {
-    let tempInfo: Template | null = curTemp
-    const { x: startX, y: startY } = startPoint;
-    if (!isDragging || !tempInfo) {
-      const { width, height } = this.design.setting.settingConfig.template
-      this.appendTemplate(new Template({ width, height }, { x: startX, y: startY }, this.design))
-      return
-    }
-    const { x, y } = lastPoint;
-    let width = +(x - startX).toFixed(2);
-    let height = +(y - startY).toFixed(2);
-    if (width === 0 || height === 0) {
-      return
-    }
-    const rect = normalizeRect({ x: +startX.toFixed(2), y: +startY.toFixed(2), width, height })
-    tempInfo.updateAttrs(rect)
-  }
-
   draw() {
     this.templates.forEach(item => item.draw())
-    if (this.currentSelectedTemplate) {
-      this.currentSelectedTemplate.drawOutLine()
-    }
-    this.editTemps.forEach(tmp => {
-      tmp.drawOutLine()
+    this.design.store.get()?.forEach(graphics=>{
+      graphics.drawOutLine()
     })
   }
 
-  hitTest(e: MouseEvent) {
-    return this.templates.find(item => item.hit(e))
+  hitTest(e: IPoint) {
+    return this.templates.find(item => item.hitTest(e))
   }
 
-  //创建业务图形
-  dragTarget(e: DragEvent,type:GraphicsType) {
-    const temp = this.editTemps.find(item => item.hit(e))
-    temp?.appednGraphics(type,e)
-    return 
-  }
 
   appendTemplate(temp: Template) {
     this.templates.push(temp)

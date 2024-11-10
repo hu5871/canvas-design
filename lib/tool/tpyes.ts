@@ -16,3 +16,6 @@ export interface IToolClassConstructor {
   new (design: Design): ITool;
   type: string;
 }
+
+
+

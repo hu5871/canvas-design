@@ -1,3 +1,4 @@
+import { Template } from './../../scene/template';
 import Design from "../..";
 import { IGraphicsAttrs } from "../../types";
 import { Graphics } from "../graphics";
@@ -6,6 +7,8 @@ import { Graphics } from "../graphics";
 
 export enum GraphicsType {
   Text = 'Text',
+  Rect = 'Rect',
+  // Template = "Template"
 }
 
 
@@ -20,4 +23,12 @@ export interface IComponentClassConstructor<T extends IComponentAttrs> {
 }
 
 
+
+
+export interface IBox {
+  minX: number;
+  minY: number;
+  maxX: number;
+  maxY: number;
+}
 

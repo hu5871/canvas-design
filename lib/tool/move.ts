@@ -24,10 +24,10 @@ export class Move  implements IBaseTool{
 
   onStart(e:PointerEvent){
     this.startPoint = this.design.canvas.getSceneCursorXY(e);
-    const sceneGraph = this.design.sceneGraph
-    const selectItem = sceneGraph.currentSelectedTemplate
-    this.startLocalPosition=selectItem?.getLocalPosition()
-    this.startChildLocalPosition=selectItem?.childrenGraphics?.map(graphics=>{
+    const store = this.design.store
+    const selectTemp = store.getTemp()
+    this.startLocalPosition=selectTemp?.getLocalPosition()
+    this.startChildLocalPosition=selectTemp?.childrenGraphics?.map(graphics=>{
       return graphics.getLocalPosition()
     })
   }
@@ -36,24 +36,23 @@ export class Move  implements IBaseTool{
     if(!this.startPoint) return 
     this.dragPoint = this.design.canvas.getCursorPoint(e);
     // 获取场景坐标
-    const {x,y}=this.design.canvas.viewportCoordsToScene(  
+    const {x,y}=this.design.canvas.viwePortToScenePoint(  
       this.dragPoint!.x,
       this.dragPoint!.y,
     )
 
     let dx = x - this.startPoint!.x;
     let dy = y - this.startPoint!.y;
-    const sceneGraph = this.design.sceneGraph
+    const store = this.design.store
+    const selectTemp = store.getTemp()
 
-    const selectTemp = sceneGraph.currentSelectedTemplate
-
-    // 锁定不可拖拽模版或者子图形
+    // 锁定时不可拖拽模版或者子图形
     if(!selectTemp || selectTemp.attrs.state & LOCK) return 
-
     if(selectTemp.attrs.state & EDIT ) {
       //编辑
-      const index=selectTemp.childrenGraphics.findIndex(item=> item === selectTemp.selectItem)
-      selectTemp.selectItem?.updateAttrs({
+      const selectedItem=this.design.store.get(selectTemp.getId())
+      const index=selectTemp.childrenGraphics.findIndex(item=> item === selectedItem)
+      selectedItem?.updateAttrs({
         x: this.startChildLocalPosition![index]!.x + dx ,
         y: this.startChildLocalPosition![index]!.y + dy 
       })
@@ -66,16 +65,8 @@ export class Move  implements IBaseTool{
       y: startLocalPosition!.y + dy 
     });
 
-    // 更新子图形的属性
-    for (let i = 0; i < selectTemp.childrenGraphics.length; i++) {
-      const graphics = selectTemp.childrenGraphics[i];
-      graphics.updateAttrs({
-        x: this.startChildLocalPosition![i]!.x + dx ,
-        y: this.startChildLocalPosition![i]!.y + dy 
-      })
-    }
-    this.design.render();
 
+    this.design.render();
   }
   onEnd(){
     this.dragPoint = null;

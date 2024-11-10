@@ -1,20 +1,22 @@
 import Design from "../../..";
 import { Graphics } from "../../graphics";
-import { IRect, WithRequired } from "../../../types";
-import { hitRect } from "../../../utils/hitTest";
+import { IAdvancedAttrs, IGraphicsAttrs, IGraphicsOpts, IRect, Optional, PaintType } from "../../../types";
+import { isPointInTransformedRect } from "../../../utils/hitTest";
 import { GraphicsType } from "../types";
 import { ITextAttrs } from "./type";
 import getDpr from "../../../utils/dpr";
+import { parseRGBAStr } from "../../../utils/color";
 
 
 export class DrawText extends Graphics<ITextAttrs>  {
   type = GraphicsType.Text
-  constructor(attrs: ITextAttrs, design: Design, opts?: Pick<IRect, 'x' | 'y'>) {
+  static type = GraphicsType.Text
+  constructor(attrs: Optional<ITextAttrs, 'state'|'__id'|'transform'|'type'|'field'>, design: Design, opts?: IGraphicsOpts) {
     super(attrs, design, opts)
   }
 
 
-  override customAttrs(attrs: WithRequired<Partial<ITextAttrs>, "width" | "height">): void {
+  override customAttrs(attrs: Optional<ITextAttrs, 'state'|'__id'|'transform'|'type'|'field'>): void {
     this.attrs.style = attrs.style ?? this.design.setting.settingConfig.components[GraphicsType.Text].style
   }
 
@@ -24,49 +26,35 @@ export class DrawText extends Graphics<ITextAttrs>  {
 
 
   override draw() {
-    const { fontSize, fill, textBaseline,padding } = this.attrs.style
-    const { transform } = this.attrs
-    const dpr = getDpr();
+    if(!this.isVisible()) return
+    const { fontSize, textBaseline,padding } = this.attrs.style
+    const { transform,fill,width,height } = this.attrs
     const ctx = this.design.canvas.ctx
-    const viewport = this.design.canvas.getViewPortRect();
-    const zoom = this.design.zoom.getZoom();
-    const dx = -viewport.x;
-    const dy = -viewport.y;
     ctx.save();
-    ctx.setTransform(1, 0, 0, 1, 0, 0);
-    ctx.scale(dpr * zoom, dpr * zoom);
-    ctx.translate(dx, dy);
-    ctx.beginPath()
     ctx.transform(...transform);
+    ctx.beginPath()
     ctx.font = `${fontSize}px sans-serif`
     ctx.textBaseline = textBaseline
-    ctx.fillStyle = fill
-    ctx.fillText('文本',padding[1] , padding[0]);
-    ctx.closePath()
+    for (const paint of fill ?? []) {
+      switch (paint.type) {
+        case PaintType.Solid: {
+          ctx.fillStyle = parseRGBAStr(paint.attrs);
+
+          break;
+        }
+      }
+    }
+    ctx.fillText('文本',0,0);
     ctx.restore();
-    this.drawBorder()
+    this.boxLine()
   }
 
 
-  override hit(e: MouseEvent): Boolean {
-    const scenePoint = this.design.canvas.getSceneCursorXY(e)
-    const localPoint = this.getLocalPosition()
-    const { width, height } = this.attrs
-    return hitRect(scenePoint, localPoint, { width, height })
-  }
 
-  drawBorder() {
+  boxLine() {
     const { width, height, transform } = this.attrs
     const ctx = this.design.canvas.ctx
-    const dpr = getDpr();
-    const viewport = this.design.canvas.getViewPortRect();
-    const zoom = this.design.zoom.getZoom();
-    const dx = -viewport.x;
-    const dy = -viewport.y;
     ctx.save();
-    ctx.setTransform(1, 0, 0, 1, 0, 0);
-    ctx.scale(dpr * zoom, dpr * zoom);
-    ctx.translate(dx, dy);
     ctx.beginPath();
     ctx.transform(...transform);
     ctx.strokeStyle = '#d1d5db';
@@ -77,4 +65,14 @@ export class DrawText extends Graphics<ITextAttrs>  {
     ctx.closePath();
     ctx.restore();
   }
+
+
+  override  updateAttrs(partialAttrs: Partial<IGraphicsAttrs > & IAdvancedAttrs) {
+    
+    super.updateAttrs(partialAttrs)
+  }
+
+
+ 
+  
 }

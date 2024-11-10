@@ -85,11 +85,11 @@ export default class Canvas {
     }
     if (height !== undefined) {
       this.canvasElement.height = height * dpr;
-      console.log(this.canvasElement.height)
       this.canvasElement.style.height = height + 'px';
     }
     this.offsetX = x
     this.offsetY = y
+
   }
 
   // 设置视口
@@ -160,15 +160,23 @@ export default class Canvas {
 
   // 获取场景中的光标坐标
   getSceneCursorXY(event: { clientX: number; clientY: number }, round = false) {
+    const zoom = this.design.zoom.getZoom();
     const { x, y } = this.getCursorPoint(event);// 获取光标在画布中的坐标
-    return this.viewportCoordsToScene(x, y, round);// 转换为场景坐标
+    return this.viwePortToScenePoint(x, y, round);// 转换为场景坐标
   }
 
   // 将视口坐标转换为场景坐标
-  viewportCoordsToScene(x: number, y: number, round = false) {
+  viwePortToScenePoint(x: number, y: number, round = false) {
     const zoom = this.design.zoom.getZoom();// 获取当前缩放比例
     const { x: scrollX, y: scrollY } = this.getViewPortRect();// 获取视口滚动位置
     return viewportCoordsToSceneUtil(x, y, zoom, scrollX, scrollY, round);// 调用工具函数进行转换
+  }
+
+  // 转换视口坐标
+  toViewportPt(x: number, y: number) {
+    const zoom = this.design.zoom.getZoom();
+    const { x: scrollX, y: scrollY } = this.getViewPortRect();
+    return sceneCoordsToViewportUtil(x, y, zoom, scrollX, scrollY);
   }
 
   render() {
@@ -184,7 +192,6 @@ export default class Canvas {
     ctx.save();
     ctx.fillStyle = "#f4f4f4";
     ctx.fillRect(0, 0, this.canvasElement.width, this.canvasElement.height);
-    ctx.restore();
 
     const dx = -viewport.x;
     const dy = -viewport.y;
@@ -195,7 +202,10 @@ export default class Canvas {
     ctx.save();
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.scale(dpr, dpr);
-    
+
+    this.design.sceneGraph.controlHandleManager.draw()
+
+    ctx.restore();
   }
 
 }

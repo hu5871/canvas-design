@@ -13,12 +13,22 @@ export interface IDesignEvent {
   keyDown(e: KeyboardEvent): void
   keyUp(e: KeyboardEvent): void
   contextmenu(e: MouseEvent): void
-  dblclick(e:MouseEvent):void
 }
 
 export default class DesignEvent {
+  isShiftPressing = false;
+  isCtrlPressing = false;
+  isAltPressing = false;
+  isCommandPressing = false;
+  isSpacePressing = false;
+  isWheelBtnPressing = false;
+
+
+  isDraggingCanvasBySpace = false;
+  isEnableDelete = true;
+  isEnableContextMenu = true;
   private emitter = new EventEmitter<IDesignEvent>()
-  dragCanvas:DragCanvas = new DragCanvas(this.design,this)
+  dragCanvas: DragCanvas = new DragCanvas(this.design, this)
 
   constructor(private design: Design) {
     this.listendragTemp(design.canvas.canvasElement)
@@ -26,18 +36,15 @@ export default class DesignEvent {
 
   private listendragTemp(canvas: HTMLCanvasElement) {
     canvas.addEventListener('wheel', this.canvasWheel);
-    canvas.addEventListener('dblclick', this.canvasdbClick);
-    window.addEventListener("keydown", this.keyDown)
-    window.addEventListener("keyup", this.keyUp)
+    document.addEventListener("keydown", this.keyDown)
+    document.addEventListener("keyup", this.keyUp)
     canvas.addEventListener('pointerdown', this.pointerDown);
-    window.addEventListener('pointermove', this.pointerMove);
-    window.addEventListener('pointerup', this.pointerUp);
-    window.addEventListener('wheel', this.whidowWheel, {
+    document.addEventListener('pointermove', this.pointerMove);
+    document.addEventListener('pointerup', this.pointerUp);
+    document.addEventListener('wheel', this.whidowWheel, {
       passive: false,
     });
     canvas.addEventListener("contextmenu", this.contextmenu)
-
-
   }
 
   contextmenu = (e: MouseEvent) => {
@@ -57,21 +64,60 @@ export default class DesignEvent {
     this.emitter.emit("pointerUp", e)
   }
 
+
+  handlerKeys(e: KeyboardEvent) {
+    this.isShiftPressing = e.shiftKey;
+    this.isCtrlPressing = e.ctrlKey;
+    this.isAltPressing = e.altKey;
+    this.isCommandPressing = e.metaKey;
+    if (e.code === 'Space') {
+      this.isSpacePressing = e.type === 'keydown';
+    }
+  }
+
   keyDown = (e: KeyboardEvent) => {
+    this.handlerKeys(e)
     this.emitter.emit("keyDown", e)
   }
   keyUp = (e: KeyboardEvent) => {
+    this.handlerKeys(e)
     this.emitter.emit("keyUp", e)
   }
 
   canvasWheel = (e: WheelEvent) => {
     this.emitter.emit("canvasWheel", e)
   }
-  canvasdbClick = (e: MouseEvent) => {
-    this.emitter.emit("dblclick", e)
-  }
+
   whidowWheel = (e: WheelEvent) => {
     this.emitter.emit("whidowWheel", e)
+  }
+
+  enableDelete() {
+    this.isEnableDelete = true;
+  }
+  disableDelete() {
+    this.isEnableDelete = false;
+  }
+  enableContextmenu() {
+    this.isEnableContextMenu = true;
+  }
+  disableContextmenu() {
+    this.isEnableContextMenu = false;
+  }
+
+
+
+  destroy() {
+    const canvas = this.design.canvas.canvasElement
+    canvas.removeEventListener('wheel', this.canvasWheel);
+    document.removeEventListener("keydown", this.keyDown)
+    document.removeEventListener("keyup", this.keyUp)
+    canvas.removeEventListener('pointerdown', this.pointerDown);
+    document.removeEventListener('pointermove', this.pointerMove);
+    document.removeEventListener('pointerup', this.pointerUp);
+    document.removeEventListener('wheel', this.whidowWheel);
+    canvas.removeEventListener("contextmenu", this.contextmenu)
+
   }
 
 

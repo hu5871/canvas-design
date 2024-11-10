@@ -13,9 +13,6 @@
         margin: 0;
         box-sizing: border-box;
       }
-      canvas {
-        /* display: block; */
-      }
     </style>
   </head>
   <body>
@@ -26,61 +23,25 @@
     <script src="https://unpkg.com/tdesign-react/dist/tdesign.min.js"></script>
     <script src="https://unpkg.com/tdesign-icons-react@0.3.4/dist/index.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
     <script src="./dist/index.umd.js"></script>
-    <script>
-      const useDrag = (id, design) => {
-        let canvasEl = null
-        let type = undefined
 
-        const dragenter = (e) => {}
-        const dragover = (e) => {
-          e.preventDefault()
-        }
-        const dragleave = (e) => {}
-        const drop = (e) => {
-          design.sceneGraph.dragTarget(e, type)
-        }
-        function onDragStart(e, item) {
-          if (!canvasEl) {
-            canvasEl = document.querySelector(id)
-          }
-          canvasEl?.addEventListener('dragenter', dragenter, true) //进入元素区域
-          canvasEl?.addEventListener('dragover', dragover) //经过元素
-          canvasEl?.addEventListener('dragleave', dragleave) //离开
-          canvasEl?.addEventListener('drop', drop) //松手
-          type = item
-        }
-
-        function onDragEnd(e, item) {
-          if (!canvasEl) {
-            return false
-          }
-          canvasEl.removeEventListener('dragenter', dragenter)
-          canvasEl.removeEventListener('dragover', dragover)
-          canvasEl.removeEventListener('dragleave', dragleave)
-          canvasEl.removeEventListener('drop', drop)
-        }
-
-        return {
-          onDragStart,
-          onDragEnd,
-        }
-      }
-    </script>
     <script type="text/babel">
       function App() {
         const { useEffect, useRef, useState } = React
         const {
           NavigationArrowIcon,
           ArtboardIcon,
+          LettersZIcon,
           ChevronRightIcon,
           ChevronLeftIcon,
           ChevronDownIcon,
-          GestureRanslationIcon
+          GestureRanslationIcon,
         } = TDesignIconReact
         const Layout = TDesign.Layout
         const { Header, Content, Footer, Aside } = TDesign.Layout
-        const { Row, Col, Button, Drawer, Dropdown, Space } = TDesign
+        const { Row, Col, Button, Drawer, Dropdown, Space, MessagePlugin } =
+          TDesign
         const [design, setDesign] = useState(null)
         const [currentTool, setTool] = useState('select')
         const [rect, setRect] = useState(null)
@@ -90,18 +51,20 @@
         const [launchedTree, setLaunchedTree] = useState(true)
         const [launchedAttrs, setLaunchedAttrs] = useState(true)
 
-        const { onDragStart: dragStart, onDragEnd: dragEnd } = useDrag(
-          '#design',
-          design
-        )
-
         function handlePoint(e) {
           setContextPoint(e)
         }
 
-        function  zoomChange(zoom){
+        function zoomChange(zoom) {
           setZoom(zoom)
         }
+
+        function failMsg(msg) {
+          MessagePlugin.error(msg)
+        }
+       
+        
+
         useEffect(() => {
           const data = JSON.parse(localStorage.getItem('data') ?? `[]`)
           let designIns = new Design({
@@ -111,11 +74,13 @@
 
           setDesign(designIns)
           designIns.sceneGraph.tool.on('onChange', setTool)
+          designIns.sceneGraph.tool.on('editFail', failMsg)
           designIns.sceneGraph.on('selectTemplate', setRect)
           designIns.sceneGraph.on('watchRect', setRect)
           designIns.sceneGraph.on('contentmenu', handlePoint)
           designIns.sceneGraph.on('getMenuList', setMenu)
-          designIns.zoom.on('zoomChange', zoomChange);
+
+          designIns.zoom.on('zoomChange', zoomChange)
 
           return () => {
             setDesign(null)
@@ -146,9 +111,6 @@
           const data = design.getJson()
           localStorage.setItem('data', JSON.stringify(data))
         }
-
-        const onDragstart = (e, type) => dragStart(e, type)
-        const onDragend = (e, type) => dragEnd(e, type)
 
         const options = [
           {
@@ -217,6 +179,23 @@
                       </div>
                     </TDesign.Tooltip>
                     <TDesign.Tooltip
+                      content="文本"
+                      destroyOnClose
+                      showArrow
+                      theme="default"
+                    >
+                      <div
+                        onClick={() => changeTool('drawText')}
+                        className={`w-[40px] h-[40px]  rounded flex justify-center items-center ${
+                          currentTool === 'drawText'
+                            ? 'bg-[#38bdf8] text-white'
+                            : ''
+                        }`}
+                      >
+                        <LettersZIcon className=" w-[20px!important] h-[20px!important]" />
+                      </div>
+                    </TDesign.Tooltip>
+                    <TDesign.Tooltip
                       content="拖拽画布 H"
                       destroyOnClose
                       showArrow
@@ -266,25 +245,6 @@
                   showOverlay={false}
                 >
                   <div className="flex w-full h-full">
-                    {launchedTree ? (
-                      <div className="flex-1 grid grid-cols-2 gap-[16px]">
-                        <div
-                          draggable
-                          onDragStart={(e) => onDragstart(e, 'Text')}
-                          className="h-[40px] border border-[#38bdf8] rounded flex justify-center items-center"
-                        >
-                          文本
-                        </div>
-
-                        <div
-                          draggable
-                          onDragStart={(e) => onDragstart(e, 'image')}
-                          className="h-[40px] border border-[#38bdf8] rounded  flex justify-center items-center"
-                        >
-                          图片
-                        </div>
-                      </div>
-                    ) : null}
                     <div className="h-full w-[28px] hover:opacity-100 opacity-0 animate-pulse flex items-center justify-center">
                       {launchedTree ? (
                         <ChevronLeftIcon
@@ -302,7 +262,7 @@
                 </Drawer>
                 <Layout className="">
                   <Content>
-                    <div id="design" style={{height:'100%'}}></div>
+                    <div id="design" style={{ height: '100%' }}></div>
                     {menu && contextPoint ? (
                       <div
                         className="fixed top-0 bottom-0 left-0 right-0 z-0  "
