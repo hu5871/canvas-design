@@ -478,7 +478,6 @@ const createTransformHandles = (
     ),
     type: 'e',
     hitTest,
-
     isTransformHandle: true,
   });
 
@@ -493,7 +492,6 @@ const createTransformHandles = (
     ),
     type: 's',
     hitTest,
-
     isTransformHandle: true,
   });
 
@@ -509,7 +507,6 @@ const createTransformHandles = (
     ),
     type: 'w',
     hitTest,
-    // 
     isTransformHandle: true,
   });
 

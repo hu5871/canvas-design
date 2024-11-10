@@ -48,6 +48,7 @@ const defaultConfig: IConfig = {
   handleFill: '#fcfcfc',
   handleStroke: '#1592fe',
   neswHandleWidth: 10, // north/east/south/west handle width
+  lockRotation: Math.PI / 12, // 旋转时，通过 shift 约束旋转角度为该值的整数倍。
 }
 
 export default class Settting {
@@ -56,7 +57,6 @@ export default class Settting {
   constructor(config: Partial<IConfig> = {}) {
     this.config = cloneDeep({ ...defaultConfig, ...config })
   }
-
 
   get v() {
     return this.version
