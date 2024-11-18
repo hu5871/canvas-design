@@ -6,7 +6,7 @@ import { offsetRect, rectToMidPoints, rectToVertices } from "../geo/geo_rect";
 import { DrawRect } from "../graphics/components/rect";
 import { GraphicsType } from "../graphics/components/types";
 import { Graphics } from "../graphics/graphics";
-import { HALF_PI } from "../settting";
+import { HALF_PI } from "../setting";
 import { IGraphicsOpts, IPaint, IPoint, PaintType } from "../types";
 import { parseHexToRGBA } from "../utils/color";
 import { ControlHandle } from "./handler";
@@ -175,7 +175,7 @@ export class ControlHandleManager {
     handleName: string;
   } | null {
     const handles: ControlHandle[] = [];
-    const graphics = this.design.store.getSelectedChild()
+    const graphics = this.design.store.getGraphics()
     if (graphics) {
       handles.push(...Array.from(this.transformHandles.values()));
     } else {
@@ -186,9 +186,10 @@ export class ControlHandleManager {
       return null;
     }
 
+    const hitPointVW = this.design.canvas.toViewportPt(hitPoint.x, hitPoint.y);
     const box = {
-      ...graphics.getSize(),
-      transform: graphics.getWorldTransform()
+      ...graphics!.getSize(),
+      transform: graphics!.getWorldTransform()
     }
 
     for (let i = handles.length - 1; i >= 0; i--) {
@@ -200,8 +201,8 @@ export class ControlHandleManager {
       }
 
       const isHit = handle.hitTest
-        ? handle.hitTest(hitPoint, 0, box)
-        : handle.graphics.hitTest(hitPoint);
+        ? handle.hitTest(hitPointVW, 0, box)
+        : handle.graphics.hitTest(hitPointVW);
 
       if (isHit) {
         return {
@@ -217,7 +218,7 @@ export class ControlHandleManager {
 
 
   draw() {
-    const graphics = this.design.store.getSelectedChild();
+    const graphics = this.design.store.getGraphics();
 
     if (!graphics) return
     const rect: ITransformRect = {

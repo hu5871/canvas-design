@@ -2,7 +2,7 @@ import Canvas from "./canvas";
 import EventEmitter from "./events/eventEmitter";
 import DesignEvent from "./events/index";
 import { ToolType } from "./tool";
-import Settting from "./settting";
+import Settting from "./setting";
 import SceneGraph from "./scene/index";
 import Zoom from "./zoom";
 import { ITemplateAttrs } from "./types";

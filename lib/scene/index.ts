@@ -8,6 +8,7 @@ import { EDIT, IMenuItem, Menu } from '../tool/menu';
 import { Store } from '../store';
 import { Graphics } from '../graphics/graphics';
 import { ControlHandleManager } from '../control_handle_manager';
+import Grid from '../grid';
 // import { createComponent } from '../graphics/components';
 
 /**
@@ -33,7 +34,7 @@ export const getRectByTwoPoint = (point1: IPoint, point2: IPoint): IRect => {
 
 interface EmitEvents {
   selectTemplate(rect: IRect | null): void;
-  watchRect(rect: IRect | null): void
+  watchRect(rect: IRect | undefined): void
   contextmenu(): void
   getMenuList(emnu: IMenuItem[] | undefined): void
   [key: string | symbol]: (...args: any[]) => void
@@ -45,8 +46,9 @@ export default class SceneGraph {
   public tool: Tool = new Tool(this.design)
   private menu: Menu = new Menu(this.design)
   controlHandleManager:ControlHandleManager
-
+  grid:Grid
   constructor(private design: Design, data: ITemplateAttrs[]) {
+    this.grid = new Grid(design);
     this.registerEvent()
     this.controlHandleManager=new ControlHandleManager(design)
     data?.forEach(attrs => {
@@ -56,10 +58,10 @@ export default class SceneGraph {
       })
       this.appendTemplate(tmp)
       if (attrs.state & EDIT) {
-        this.design.store.add({
-          graphics:tmp,
-          parent:undefined
-        })
+        // this.design.store.add({
+        //   graphics:tmp,
+        //   parent:undefined
+        // })
       }
     })
   }
@@ -96,7 +98,7 @@ export default class SceneGraph {
   }
 
 
-  emitWatchRect(rect: IRect|null) {
+  emitWatchRect(rect: IRect|undefined) {
     this.emitter.emit("watchRect", rect)
   }
 
@@ -111,9 +113,6 @@ export default class SceneGraph {
 
   draw() {
     this.templates.forEach(item => item.draw())
-    this.design.store.get()?.forEach(graphics=>{
-      graphics.drawOutLine()
-    })
   }
 
   hitTest(e: IPoint) {

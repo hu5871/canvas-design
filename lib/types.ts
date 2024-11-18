@@ -64,6 +64,17 @@ export interface IConfig{
   handleStrokeWidth:number
   neswHandleWidth:number
   lockRotation?:number
+  minStepInViewport: number, // 视口区域下的最小步长
+
+  //网格
+  enablePixelGrid: boolean;
+  snapToGrid: boolean; // 是否吸附到网格
+  minPixelGridZoom: number; // draw pixel grid When zoom reach this value
+  pixelGridLineColor: string; // pixel grid line color
+  gridViewX: number;
+  gridViewY: number;
+  gridSnapX: number;
+  gridSnapY: number;
 }
 
 

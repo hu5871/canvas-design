@@ -162,11 +162,11 @@ export default class Canvas {
   getSceneCursorXY(event: { clientX: number; clientY: number }, round = false) {
     const zoom = this.design.zoom.getZoom();
     const { x, y } = this.getCursorPoint(event);// 获取光标在画布中的坐标
-    return this.viwePortToScenePoint(x, y, round);// 转换为场景坐标
+    return this.toScenePt(x, y, round);// 转换为场景坐标
   }
 
   // 将视口坐标转换为场景坐标
-  viwePortToScenePoint(x: number, y: number, round = false) {
+  toScenePt(x: number, y: number, round = false) {
     const zoom = this.design.zoom.getZoom();// 获取当前缩放比例
     const { x: scrollX, y: scrollY } = this.getViewPortRect();// 获取视口滚动位置
     return viewportCoordsToSceneUtil(x, y, zoom, scrollX, scrollY, round);// 调用工具函数进行转换
@@ -202,6 +202,12 @@ export default class Canvas {
     ctx.save();
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.scale(dpr, dpr);
+    if (
+      this.design.setting.get('enablePixelGrid') &&
+      zoom >= this.design.setting.get('minPixelGridZoom')
+    ) {
+      this.design.sceneGraph.grid.draw();
+    }
 
     this.design.sceneGraph.controlHandleManager.draw()
 

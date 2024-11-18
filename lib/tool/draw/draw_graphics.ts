@@ -6,6 +6,7 @@ import { Graphics } from "../../graphics/graphics";
 import { getTemplateItem, isTempGraphics } from "../../scene/utils";
 import { normalizeRect } from "../../scene";
 import { applyMatrix, invertMatrix } from "../../geo/geo_matrix";
+import { SnapHelper } from "../../utils/snap";
 
 export abstract class DrawGraphicsTool implements IBaseTool {
   static type = ""
@@ -28,15 +29,21 @@ export abstract class DrawGraphicsTool implements IBaseTool {
   onStart = (e: PointerEvent) => {
     this.__is_draw = true
     this.__is_dragging = false
-    this.startPoint = this.design.canvas.getSceneCursorXY(e)
     this.drawingGraphics = null;
+    this.startPoint = SnapHelper.getSnapPtBySetting(
+      this.design.canvas.getSceneCursorXY(e),
+      this.design.setting,
+    );
   }
 
   onDrag = (e: PointerEvent) => {
     e.stopPropagation()
     if(!this.__is_draw) return 
     this.__is_dragging = true
-    this.lastPoint = this.design.canvas.getSceneCursorXY(e)
+    this.lastPoint = SnapHelper.getSnapPtBySetting(
+      this.design.canvas.getSceneCursorXY(e),
+      this.design.setting,
+    );
     this.updateRect();
     this.design.canvas.render()
   }

@@ -89,12 +89,21 @@ export class DragCanvas {
   }
 
   private handleKeyDown = (e: KeyboardEvent) => {
-
     // 拖拽模版快捷键
     if(e.code == 'KeyH'){
       this.active()
       this.design.activeTool('drag')
     }
+
+
+    // 拖拽模版快捷键
+    if(e.code == 'Delete'){
+      this.active()
+       
+      
+    }
+
+
   }
   private handleKeyUp = (e: KeyboardEvent) => {
   }

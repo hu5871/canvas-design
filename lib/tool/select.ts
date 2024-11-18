@@ -1,9 +1,9 @@
+import { Graphics } from './../graphics/graphics';
 import Design from "..";
 import { IPoint } from "../types";
 import { ITool } from "./tpyes";
 import { Move } from "./move";
 import { Resize } from "./resize";
-import { Graphics } from "../graphics/graphics";
 import { Template } from "../scene/template";
 import { Rotation } from "./rotation";
 import { isRotationCursor } from "../cursor";
@@ -21,7 +21,7 @@ export class SelectedTool implements ITool {
   constructor(private design: Design) {
     this.strategyMove = new Move(design);
     this.strategySelectResize = new Resize(design);
-    this.strategySelectRotation= new Rotation(design)
+    this.strategySelectRotation = new Rotation(design)
   }
 
   onActive() {
@@ -46,7 +46,7 @@ export class SelectedTool implements ITool {
       if (handleInfo.handleName.endsWith("Rotation")) {
         this.strategySelectRotation.handleType = handleInfo.handleName;
         this.currStrategy = this.strategySelectRotation;
-      }else{
+      } else {
         this.currStrategy = this.strategySelectResize;
       }
     } else {
@@ -58,23 +58,21 @@ export class SelectedTool implements ITool {
         })
       }
 
-      let temp = curTemp ? {
-        graphics: curTemp,
-        parent: undefined,
-      } : undefined
 
-      let child = childGraphics ? {
-        graphics: childGraphics,
-        parent: temp?.graphics.getId()!,
-      } : undefined
+      let graphics: Graphics | undefined = childGraphics || curTemp
 
-      temp && this.design.store.add(temp)
-      if (child) {
-        this.design.store.add(child)
-      }
-      this.design.sceneGraph.emitWatchRect(childGraphics ? childGraphics.getRect() : curTemp ? curTemp.getRect() : null)
+      // let temp = curTemp ? {
+      //   graphics: curTemp,
+      //   parent: undefined,
+      // } : undefined
 
-      !temp && !child && this.design.store.clear()
+      // let child = childGraphics ? {
+      //   graphics: childGraphics,
+      //   parent: temp?.graphics.getId()!,
+      // } : undefined
+
+      this.design.store.selectGraphics(graphics)
+      this.design.sceneGraph.emitWatchRect(graphics?.getRect())
     }
 
     if (this.currStrategy) {
@@ -85,7 +83,7 @@ export class SelectedTool implements ITool {
   }
 
   onDrag(e: PointerEvent) {
-    if (this.currStrategy ) {
+    if (this.currStrategy) {
       this.currStrategy.onDrag(e);
     }
   }

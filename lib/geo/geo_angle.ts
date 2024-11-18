@@ -1,4 +1,4 @@
-import { DOUBLE_PI } from "../settting";
+import { DOUBLE_PI } from "../setting";
 import { IMatrixArr, IPoint } from "../types";
 import { Matrix } from "./geo_matrix";
 

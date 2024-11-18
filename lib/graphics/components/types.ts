@@ -22,9 +22,6 @@ export interface IComponentClassConstructor<T extends IComponentAttrs> {
   type: GraphicsType;
 }
 
-
-
-
 export interface IBox {
   minX: number;
   minY: number;

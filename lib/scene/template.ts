@@ -10,7 +10,6 @@ import { applyMatrix, invertMatrix } from "../geo/geo_matrix";
 import { EDIT } from "../tool/menu";
 
 export class Template extends Graphics<ITemplateAttrs> {
-
   constructor(
     attrs: Optional<ITemplateAttrs, 'state' | '__id' | 'transform' | 'type' | 'field'>,
     design: Design,
@@ -47,14 +46,14 @@ export class Template extends Graphics<ITemplateAttrs> {
   }
 
 
-  override hitTest(point: IPoint): boolean {
-    const { width, height } = this.attrs
-    return isPointInTransformedRect(point,{
-      width,
-      height,
-      transform:this.getWorldTransform()
-    })
-  }
+  // override hitTest(point: IPoint): boolean {
+  //   const { width, height } = this.attrs
+  //   return isPointInTransformedRect(point,{
+  //     width,
+  //     height,
+  //     transform:this.getWorldTransform()
+  //   })
+  // }
 
 
   override getJson(): ITemplateAttrs {
@@ -64,8 +63,6 @@ export class Template extends Graphics<ITemplateAttrs> {
 
     return { ...this.attrs, children }
   }
-
-
 
   override draw() {
     const ctx = this.design.canvas.ctx
@@ -83,14 +80,17 @@ export class Template extends Graphics<ITemplateAttrs> {
       graphics.draw()
     })
     ctx.restore();
+
+    if (this.isEdit()){
+      this.drawOutLine()
+    }
   }
 
   override drawOutLine() {
     const ctx = this.design.canvas.ctx;
-    const zoom = this.design.zoom.getZoom();
-    let strokeWidth = 1 * zoom;
+    let strokeWidth = 1 
     ctx.save();
-    const { width, height, transform } = this.attrs;
+    const { width, height } = this.attrs;
     ctx.transform(...this.getWorldTransform());
     ctx.strokeStyle = "#38bdf8";
     ctx.lineWidth = strokeWidth;

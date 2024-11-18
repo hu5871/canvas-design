@@ -12,7 +12,7 @@ import { getRotationCursor } from "../control_handle_manager/utils";
 
 
 export class Rotation implements IBaseTool {
-  private selectedItem: Graphics | null = null
+  private selectedItem: Graphics | undefined = undefined
   private originWorldTf: IMatrixArr | null = null;
 
 
@@ -34,7 +34,7 @@ export class Rotation implements IBaseTool {
   onInactive() {
   }
   onStart(e: PointerEvent) {
-    this.selectedItem = this.design.store.getSelectedChild()
+    this.selectedItem = this.design.store.getGraphics()
 
     if (!this.selectedItem) return
     this.originWorldTf=this.selectedItem.getWorldTransform()

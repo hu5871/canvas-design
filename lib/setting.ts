@@ -49,9 +49,20 @@ const defaultConfig: IConfig = {
   handleStroke: '#1592fe',
   neswHandleWidth: 10, // north/east/south/west handle width
   lockRotation: Math.PI / 12, // 旋转时，通过 shift 约束旋转角度为该值的整数倍。
+  minStepInViewport: 50, // 视口区域下的最小步长
+
+  /**** pixel grid ****/
+  enablePixelGrid: true,
+  snapToGrid: true, // 是否吸附到网格
+  minPixelGridZoom: 8, // draw pixel grid When zoom reach this value
+  pixelGridLineColor: '#cccccc55', // pixel grid line color
+  gridViewX: 1,
+  gridViewY: 1,
+  gridSnapX: 1,
+  gridSnapY: 1,
 }
 
-export default class Settting {
+export default class Setting {
   private version = "0.0.1"
   private config: IConfig
   constructor(config: Partial<IConfig> = {}) {

@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Document</title>
+    <title>canvas-design</title>
     <link
       rel="stylesheet"
       href="https://unpkg.com/tdesign-react/dist/tdesign.min.css"
@@ -48,8 +48,8 @@
         const [menu, setMenu] = useState([])
         const [zoom, setZoom] = useState(1)
         const [contextPoint, setContextPoint] = useState(null)
-        const [launchedTree, setLaunchedTree] = useState(true)
-        const [launchedAttrs, setLaunchedAttrs] = useState(true)
+        const [launchedTree, setLaunchedTree] = useState(false)
+        const [launchedAttrs, setLaunchedAttrs] = useState(false)
 
         function handlePoint(e) {
           setContextPoint(e)
@@ -83,6 +83,7 @@
           designIns.zoom.on('zoomChange', zoomChange)
 
           return () => {
+            designIns.destroy()
             setDesign(null)
           }
         }, [])

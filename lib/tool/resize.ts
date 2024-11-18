@@ -6,6 +6,7 @@ import { recomputeTransformRect } from "../geo/geo_rect";
 import { Graphics, multiplyMatrix } from "../graphics/graphics";
 import { IGraphicsAttrs, IMatrixArr, IPoint } from "../types";
 import { cloneDeep, isEqual } from "../utils/loadsh";
+import { SnapHelper } from "../utils/snap";
 import { IBaseTool } from "./tpyes";
 
 
@@ -37,14 +38,13 @@ export class Resize implements IBaseTool {
     if (!handleInfo) return
 
 
-    const selectedGraphics = this.design.store.getSelectedChild()
+    const selectedGraphics = this.design.store.getGraphics()
     if (!selectedGraphics) return
 
     this.originAttrs = selectedGraphics.getAttrs()
     this.originWorldTransform = [
       ...selectedGraphics.getWorldTransform(),
     ]
-    console.log("originWorldTransform", this.originWorldTransform)
     this.handleName = handleInfo.handleName;
   }
 
@@ -52,7 +52,15 @@ export class Resize implements IBaseTool {
     this.lastPoint = this.design.canvas.getSceneCursorXY(e);
     const prevLastPoint = this.prevLastPoint;
     this.prevLastPoint = this.lastPoint;
-
+    const enableGripSnap = this.design.setting.get('snapToGrid') &&
+    (['nw', 'ne', 'se', 'sw'].includes(this.handleName) ||
+      (['n', 'e', 's', 'w'].includes(this.handleName) ) )
+        if (enableGripSnap) {
+      this.lastPoint = SnapHelper.getSnapPtBySetting(
+        this.lastPoint,
+        this.design.setting,
+      );
+    }
 
     //判断相等
     if (isEqual(prevLastPoint, this.lastPoint)) {
@@ -62,7 +70,7 @@ export class Resize implements IBaseTool {
     this.design.render();
   }
   onEnd(_e: PointerEvent) {
-    const selectedItem = this.design.store.getSelectedChild()
+    const selectedItem = this.design.store.getGraphics()
     if (!selectedItem) {
       return;
     }
@@ -112,7 +120,9 @@ export class Resize implements IBaseTool {
       new Matrix(...originWorldTf!).invert(),
     );
 
-    const selectedGraphics = this.design.store.getSelectedChild()
+    const selectedGraphics = this.design.store.getGraphics()
+
+    if(!selectedGraphics) return 
 
     this.resizeGraphicsArray(prependedTransform.getArray())
     this.updateControls(selectedGraphics!);
@@ -159,7 +169,7 @@ export class Resize implements IBaseTool {
 
 
   private resizeGraphicsArray(prependedTransform: IMatrixArr) {
-    const selectedItem = this.design.store.getSelectedChild()
+    const selectedItem = this.design.store.getGraphics()
     if (!selectedItem) return
     const originWorldTf = this.originWorldTransform!
     const newWorldTf = multiplyMatrix(prependedTransform, originWorldTf);
@@ -315,7 +325,6 @@ export const resizeRect = (
     flip?: boolean; // 是否翻转
   },
 ): ITransformRect => {
-  console.log('type',type)
   const resizeOp = resizeOps[type]; // 获取对应的缩放操作
   if (!resizeOp) {
     throw new Error(`resize type ${type} is invalid`); // 无效的缩放类型
