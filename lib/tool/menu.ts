@@ -97,7 +97,7 @@ export class Menu implements IBaseTool {
 
 
   getMenu(): IMenuItem[] {
-     const tmp= this.design.store.getTemplate()
+     const tmp= this.design.store.getTemplate() || this.design.store.getGraphics()?.getParent()
     if(!tmp) return []
     let state =tmp?.attrs.state
     const stateMap: Record<IMenuItem['type'], boolean> = {
