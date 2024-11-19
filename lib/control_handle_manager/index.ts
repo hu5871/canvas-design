@@ -220,7 +220,7 @@ export class ControlHandleManager {
   draw() {
     const graphics = this.design.store.getGraphics();
 
-    if (!graphics) return
+    if (!graphics || !graphics.getParent()?.isEdit()) return
     const rect: ITransformRect = {
       ...graphics.getSize(),
       transform: graphics.getWorldTransform()

@@ -49,6 +49,7 @@ export class Resize implements IBaseTool {
   }
 
   onDrag(e: PointerEvent) {
+    if(!this.design.store.getGraphics()?.getParent()?.isEdit()) return 
     this.lastPoint = this.design.canvas.getSceneCursorXY(e);
     const prevLastPoint = this.prevLastPoint;
     this.prevLastPoint = this.lastPoint;
@@ -71,17 +72,12 @@ export class Resize implements IBaseTool {
   }
   onEnd(_e: PointerEvent) {
     const selectedItem = this.design.store.getGraphics()
-    if (!selectedItem) {
-      return;
-    }
+    if (!selectedItem) return
     this.design.render();
-
     this.originAttrs = null;
     this.updatedAttrs = null;
     this.startPoint = { x: -1, y: -1 };
-
     this.lastPoint = null;
-
   }
 
   updateGraphics() {
