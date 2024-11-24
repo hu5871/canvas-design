@@ -54,22 +54,11 @@ export class SelectedTool implements ITool {
         //选中子图形
         this.currStrategy = this.strategyMove;
         childGraphics = curTemp.childrenGraphics.find(graphics => {
-          return graphics.hitTest(this.startPoint)
+          return graphics.hitTest(this.startPoint, this.design.setting.get("selectionHitPadding") / this.design.zoom.getZoom())
         })
+
       }
-
-
       let graphics: Graphics | undefined = childGraphics || curTemp
-
-      // let temp = curTemp ? {
-      //   graphics: curTemp,
-      //   parent: undefined,
-      // } : undefined
-
-      // let child = childGraphics ? {
-      //   graphics: childGraphics,
-      //   parent: temp?.graphics.getId()!,
-      // } : undefined
 
       this.design.store.selectGraphics(graphics)
       this.design.sceneGraph.emitWatchRect(graphics?.getRect())

@@ -21,7 +21,7 @@ export abstract class DrawGraphicsTool implements IBaseTool {
   }
 
   onActive() {
-    return
+    
   }
 
   onInactive() { }
@@ -39,11 +39,14 @@ export abstract class DrawGraphicsTool implements IBaseTool {
   onDrag = (e: PointerEvent) => {
     e.stopPropagation()
     if(!this.__is_draw) return 
+   
     this.__is_dragging = true
+
     this.lastPoint = SnapHelper.getSnapPtBySetting(
       this.design.canvas.getSceneCursorXY(e),
       this.design.setting,
     );
+    
     this.updateRect();
     this.design.canvas.render()
   }
@@ -51,12 +54,20 @@ export abstract class DrawGraphicsTool implements IBaseTool {
   onEnd = (e: PointerEvent|undefined) => {
     e?.stopPropagation()
     if (!this.__is_draw || !this.__is_dragging) return
-    this.design.activeTool("select")
     this.__is_draw = false
     this.__is_dragging = false
     this.design.canvas.render()
   }
 
+
+  protected adjustSizeWhenShiftPressing(rect: IRect) {
+    // pressing Shift to draw a square
+    const { width, height } = rect;
+    const size = Math.max(Math.abs(width), Math.abs(height));
+    rect.height = (Math.sign(height) || 1) * size;
+    rect.width = (Math.sign(width) || 1) * size;
+    return rect;
+  }
 
   updateRect() {
     if (!this.__is_dragging) return;
@@ -83,7 +94,7 @@ export abstract class DrawGraphicsTool implements IBaseTool {
       );
       //模版下不允许添加模版
       //todo 后续通过引入子模版实现模版服用
-      if (temp && !isTempGraphics(graphics) ) {
+      if (temp && graphics && !isTempGraphics(graphics) ) {
         const isSuccss= temp?.addGraphics(graphics);
         if(!isSuccss) return this.onEnd(undefined)
         const tf = [...graphics.attrs.transform] as IMatrixArr;

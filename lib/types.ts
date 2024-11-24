@@ -27,43 +27,36 @@ export interface IBox {
 
 
 
-export interface IZoomConfig{
+export interface IZoomConfig {
   zoomStep: number
   zoomMin: number
-  zoomMax:number
+  zoomMax: number
   zoomLevels: number[]
 }
 
 
-export interface IAppendViewRect{
-  width:number;
-  height:number;
-  isGrid:Boolean;
+export interface IAppendViewRect {
+  width: number;
+  height: number;
+  isGrid: Boolean;
 }
 
-export interface IConfig{
-  template:{
+export interface IConfig {
+  template: {
     width: number;
     height: number;
   },
-  components:{
-    [GraphicsType.Text]:{
-      type:GraphicsType.Text;
-      fill:IPaint[];
-      style:ITextStyle
-    },
-    [GraphicsType.Rect]:{
-      type:GraphicsType.Rect;
-      fill:IPaint[];
-      stroke?: IPaint[];
-    },
-  },
-  handleSize:number
-  handleFill:string
-  handleStroke:string
-  handleStrokeWidth:number
-  neswHandleWidth:number
-  lockRotation?:number
+  dragBlockStep:number;
+  textFill: IPaint[];
+  textStyle: ITextStyle;
+  stroke: IPaint;
+  strokeWidth: number;
+  handleSize: number
+  handleFill: string
+  handleStroke: string
+  handleStrokeWidth: number
+  neswHandleWidth: number
+  lockRotation?: number
   minStepInViewport: number, // 视口区域下的最小步长
 
   //网格
@@ -75,6 +68,8 @@ export interface IConfig{
   gridViewY: number;
   gridSnapX: number;
   gridSnapY: number;
+  selectionHitPadding:number; //选中距离填充
+  flipObjectsWhileResizing:boolean;
 }
 
 
@@ -126,38 +121,38 @@ export interface IPaint {
   attrs: IRGBA;
 }
 
-export interface IGraphicsAttrs{
+export interface IGraphicsAttrs {
   __version?: string;
   __id?: string
   width: number;
   height: number;
-  state:number;
-  field:string;
+  state: number;
+  field: string;
   transform: IMatrixArr;
-  type:GraphicsType
+  type: GraphicsType
   fill?: IPaint[];
   stroke?: IPaint[];
   strokeWidth?: number;
-  visible?:boolean;
+  visible?: boolean;
 }
 export interface IAdvancedAttrs {
   x?: number;
   y?: number;
   rotate?: number;
 }
-export interface IGraphicsOpts{
+export interface IGraphicsOpts {
   advancedAttrs?: IAdvancedAttrs;
   noCollectUpdate?: boolean
 }
-export interface ITemplateAttrs extends  IGraphicsAttrs{
+export interface ITemplateAttrs extends IGraphicsAttrs {
   children?: IComponentAttrs[]
 }
 
- /**
-   * | a | c | tx|
-   * | b | d | ty|
-   * | 0 | 0 | 1 |
-   */
+/**
+  * | a | c | tx|
+  * | b | d | ty|
+  * | 0 | 0 | 1 |
+  */
 export type IMatrixArr = [
   a: number,
   b: number,

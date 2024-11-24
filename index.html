@@ -37,6 +37,7 @@
           ChevronLeftIcon,
           ChevronDownIcon,
           GestureRanslationIcon,
+          SlashIcon,
         } = TDesignIconReact
         const Layout = TDesign.Layout
         const { Header, Content, Footer, Aside } = TDesign.Layout
@@ -194,6 +195,23 @@
                         }`}
                       >
                         <LettersZIcon className=" w-[20px!important] h-[20px!important]" />
+                      </div>
+                    </TDesign.Tooltip>
+                    <TDesign.Tooltip
+                      content="线条"
+                      destroyOnClose
+                      showArrow
+                      theme="default"
+                    >
+                      <div
+                        onClick={() => changeTool('drawLine')}
+                        className={`w-[40px] h-[40px]  rounded flex justify-center items-center ${
+                          currentTool === 'drawLine'
+                            ? 'bg-[#38bdf8] text-white'
+                            : ''
+                        }`}
+                      >
+                        <SlashIcon className=" w-[20px!important] h-[20px!important]" />
                       </div>
                     </TDesign.Tooltip>
                     <TDesign.Tooltip

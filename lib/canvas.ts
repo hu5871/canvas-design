@@ -208,6 +208,7 @@ export default class Canvas {
     ) {
       this.design.sceneGraph.grid.draw();
     }
+    
 
     this.design.sceneGraph.controlHandleManager.draw()
 

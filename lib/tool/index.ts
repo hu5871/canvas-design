@@ -5,26 +5,32 @@ import { DrawTemplateTool } from "./draw/draw_template";
 import { DragTool } from "./drag";
 import { ITool, IToolClassConstructor } from "./tpyes";
 import { DrawTextTool } from "./draw/draw_Text";
+import { DrawLineTool } from "./draw/draw_line";
+import { IPoint } from "../types";
 
-export const toolType = ["DRAWTEMPLATE", "select",'drag'] as const;
+export const toolType = ["DRAWTEMPLATE", "select", 'drag'] as const;
 
 export type ToolType = typeof toolType[number];
 interface Event {
   [key: string | symbol]: (...args: any[]) => void
   onChange(tool: string): void
-  editFail(msg:string):void
+  editFail(msg: string): void
 }
 
 export class Tool {
   private emitter = new EventEmitter<Event>()
   private currentTool: ITool | null = null;
   private toolMap = new Map<string, IToolClassConstructor>()
-  private enableToolTypes:string[]=[]
+  private enableToolTypes: string[] = []
+  private isPressing = false
+  private _isDragging = false
+  startPos: IPoint = { x: 0, y: 0 };
 
   constructor(private design: Design) {
     this.registerTool(SelectedTool)
     this.registerTool(DrawTemplateTool)
     this.registerTool(DrawTextTool)
+    this.registerTool(DrawLineTool)
     this.registerTool(DragTool)
 
     this.setAction(SelectedTool.type)
@@ -37,7 +43,7 @@ export class Tool {
   }
 
 
-  editFail(msg:string){
+  editFail(msg: string) {
     this.emitter.emit("editFail", msg)
   }
 
@@ -49,19 +55,37 @@ export class Tool {
     const currentTool = (this.currentTool = new Control(this.design))
     preTool?.onInactive()
     currentTool.onActive()
-    this.emitter.emit("onChange",action)
+    this.emitter.emit("onChange", action)
   }
 
 
 
   onStart = (e: PointerEvent) => {
+    this.isPressing = true
     this.currentTool?.onStart(e)
   }
   onDrag = (e: PointerEvent) => {
+    if (!this.isPressing) return
+    const dx = e.clientX - this.startPos.x;
+    const dy = e.clientY - this.startPos.y;
+    const dragBlockStep =
+      this.design.setting.get('dragBlockStep');
+    if (
+      !this._isDragging &&
+      (Math.abs(dx) > dragBlockStep || Math.abs(dy) > dragBlockStep)
+    ) {
+      this._isDragging = true;
+    }
+    if (!this._isDragging) return
     this.currentTool?.onDrag(e)
   }
   onEnd = (e: PointerEvent) => {
-    this.currentTool?.onEnd(e)
+    if (this.isPressing) {
+      this.currentTool?.onEnd(e)
+      this.setAction("select")
+    }
+    this.isPressing = false;
+    this._isDragging=false
   }
 
   on<K extends keyof Event>(eventName: K, handler: Event[K]) {

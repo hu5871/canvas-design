@@ -1,7 +1,10 @@
 import Design from "..";
 import { isTransformHandle } from "../control_handle_manager";
 import { ITransformRect } from "../control_handle_manager/types";
+import { getSweepAngle } from "../geo/geo_angle";
+import { getPolarTrackSnapPt } from "../geo/geo_line";
 import { Matrix, invertMatrix } from "../geo/geo_matrix";
+import { distance } from "../geo/geo_point";
 import { recomputeTransformRect } from "../geo/geo_rect";
 import { Graphics, multiplyMatrix } from "../graphics/graphics";
 import { IGraphicsAttrs, IMatrixArr, IPoint } from "../types";
@@ -80,12 +83,42 @@ export class Resize implements IBaseTool {
     this.lastPoint = null;
   }
 
+  isResizeOp(){
+    return ['nw', 'ne', 'se', 'sw', 'n', 'e', 's', 'w'].includes(
+      this.handleName,
+    );
+  }
+
+  private updateSingleGraphics(graphics: Graphics,originAttrs:IGraphicsAttrs,originWorldTf:IMatrixArr) {
+    const updatedAttrs = graphics.calcNewAttrsByControlHandle(
+      this.handleName,
+      this.lastPoint!,
+      originAttrs,
+      originWorldTf,
+      this.design.designEvent.isShiftPressing,
+      this.design.designEvent.isAltPressing,
+      this.design.setting.get('flipObjectsWhileResizing'),
+    );
+
+    graphics.updateAttrs(updatedAttrs);
+    this.updatedAttrs=cloneDeep(updatedAttrs);
+
+    this.updateControls(graphics);
+  }
+
   updateGraphics() {
     if (!this.lastPoint) return;
+    const selectedGraphics = this.design.store.getGraphics()
+    if(!selectedGraphics) return 
     let prependedTransform: Matrix = new Matrix();
+    const originWorldTf = this.originWorldTransform!
+    const originAttrs = this.originAttrs!
+    if (!this.isResizeOp() || selectedGraphics.attrs.height === 0) {
+      this.updateSingleGraphics(selectedGraphics,originAttrs,originWorldTf);
+      return;
+    }
 
-    const originWorldTf = this.originWorldTransform
-    const originAttrs = this.originAttrs
+   
 
     const updatedTransformRect = resizeRect(
       this.handleName,
@@ -116,9 +149,8 @@ export class Resize implements IBaseTool {
       new Matrix(...originWorldTf!).invert(),
     );
 
-    const selectedGraphics = this.design.store.getGraphics()
+  
 
-    if(!selectedGraphics) return 
 
     this.resizeGraphicsArray(prependedTransform.getArray())
     this.updateControls(selectedGraphics!);
@@ -416,3 +448,106 @@ export const resizeRect = (
   };
 };
 
+/**
+ * Get the new position of the line when resizing
+ * we consider the graphics with 0 height as a line
+ *
+ * TODO: reuse, this is something same code in tool_draw_graph.ts
+ */
+export const resizeLine = (
+  /** control type, 'se' | 'ne' | 'nw' | 'sw' */
+  type: string,
+  newPos: IPoint,
+  rect: ITransformRect,
+  options: {
+    /** keep rotation in 0 45 90 ... */
+    keepPolarSnap?: boolean;
+    scaleFromCenter?: boolean;
+  } = {
+    keepPolarSnap: false,
+    scaleFromCenter: false,
+  },
+): ITransformRect => {
+  if (!['se', 'ne', 'nw', 'sw'].includes(type)) {
+    throw new Error(`invalid type "${type}"`);
+  }
+
+  const isRightControl = type === 'se' || type === 'ne';
+
+  let globalOrigin: IPoint = { x: 0, y: 0 };
+  if (options.scaleFromCenter) {
+    globalOrigin = new Matrix(...rect.transform).apply({
+      x: rect.width / 2,
+      y: rect.height / 2,
+    });
+  } else if (isRightControl) {
+    globalOrigin = {
+      x: rect.transform[4],
+      y: rect.transform[5],
+    };
+  } else {
+    globalOrigin = new Matrix(...rect.transform).apply({
+      x: rect.width,
+      y: rect.height,
+    });
+  }
+
+  if (options.keepPolarSnap) {
+    newPos = getPolarTrackSnapPt(globalOrigin, newPos);
+  }
+
+  let width = distance(newPos, globalOrigin);
+  if (options.scaleFromCenter) {
+    width *= 2;
+  }
+
+  if (isRightControl) {
+    const offset = {
+      x: newPos.x - globalOrigin.x,
+      y: newPos.y - globalOrigin.y,
+    };
+    const rotate = getSweepAngle(
+      { x: 1, y: 0 },
+      {
+        x: newPos.x - globalOrigin.x,
+        y: newPos.y - globalOrigin.y,
+      },
+    );
+    const tf = new Matrix()
+      .rotate(rotate)
+      .translate(globalOrigin.x, globalOrigin.y);
+
+    if (options.scaleFromCenter) {
+      tf.translate(-offset.x, -offset.y);
+    }
+
+    return {
+      width,
+      height: 0,
+      transform: tf.getArray(),
+    };
+  } else {
+    const offset = {
+      x: globalOrigin.x - newPos.x,
+      y: globalOrigin.y - newPos.y,
+    };
+    const rotate = getSweepAngle({ x: 1, y: 0 }, offset);
+
+    const tf = new Matrix().rotate(rotate);
+    const newRightBottom = tf.apply({ x: width, y: rect.height });
+    tf.translate(
+      globalOrigin.x - newRightBottom.x,
+      globalOrigin.y - newRightBottom.y,
+    );
+
+    if (options.scaleFromCenter) {
+      tf.translate(offset.x, offset.y);
+    }
+
+    return {
+      width,
+      height: 0,
+      transform: tf.getArray(),
+    };
+  }
+};

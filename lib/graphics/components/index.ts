@@ -1,6 +1,7 @@
 import Design from "../..";
 import { Template } from "../../scene/template";
 import { IGraphicsAttrs, IGraphicsOpts, IPoint, Optional } from "../../types";
+import { DrawLine } from "./line";
 import { DrawRect } from "./rect";
 import { DrawText } from "./text";
 import { GraphicsType } from "./types";
@@ -8,6 +9,7 @@ import { GraphicsType } from "./types";
 const graphCtorMap = {
   [GraphicsType.Text]: DrawText,
   [GraphicsType.Rect]:DrawRect,
+  [GraphicsType.Line]:DrawLine,
   // [GraphicsType.Template] : Template
 };
 
@@ -28,6 +30,6 @@ export function createComponent<T extends GraphicsType>(
     console.error(`Component of type "${type}" not found.`);
     return;
   }
-  const fianAttrs = { ...design.setting.settingConfig.components[type], ...(attrs ?? {}) }
+  const fianAttrs = {  ...(attrs ?? {}) }
   return new (Component as new (attrs: any, design: Design, opts?: IGraphicsOpts) => GraphComponentInstance<T>)(fianAttrs as any, design, opts)
 }

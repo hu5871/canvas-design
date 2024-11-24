@@ -11,38 +11,33 @@ const defaultConfig: IConfig = {
     width: 300,
     height: 200
   },
-  components: {
-    [GraphicsType.Text]: {
-      type: GraphicsType.Text,
-      fill: [{
-        type: PaintType.Solid,
-        attrs: {
-          r: 0,
-          g: 0,
-          b: 0,
-          a: 1
-        }
-      }],
-      style: {
-        fontSize: 12,
-        lineWidth: 1,
-        textBaseline: 'top',
-        padding: [12, 12]
-      }
-    },
-    [GraphicsType.Rect]: {
-      type: GraphicsType.Rect,
-      fill: [{
-        type: PaintType.Solid,
-        attrs: {
-          r: 255,
-          g: 255,
-          b: 255,
-          a: 1
-        }
-      }],
-    },
+  textFill: [{
+    type: PaintType.Solid,
+    attrs: {
+      r: 0,
+      g: 0,
+      b: 0,
+      a: 1
+    }
+  }],
+  textStyle: {
+    fontSize: 12,
+    lineWidth: 1,
+    textBaseline: 'top',
+    padding: [12, 12]
   },
+
+  stroke: {
+    type: PaintType.Solid,
+    attrs: {
+      r: 0,
+      g: 0,
+      b: 0,
+      a: 1
+    }
+  },
+  dragBlockStep: 4, // 如果移动距离小于此值，则不会发生拖曳处理程序
+  strokeWidth: 1,
   handleStrokeWidth: 2,
   handleSize: 7,
   handleFill: '#fcfcfc',
@@ -60,6 +55,9 @@ const defaultConfig: IConfig = {
   gridViewY: 1,
   gridSnapX: 1,
   gridSnapY: 1,
+
+  selectionHitPadding:2,
+  flipObjectsWhileResizing: true,
 }
 
 export default class Setting {

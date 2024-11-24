@@ -15,13 +15,12 @@ export class DrawTextTool extends DrawGraphicsTool implements IBaseTool {
 
   protected createGraphics(rect: IRect) {
     rect = normalizeRect(rect);
-    const attrs=this.design.setting.get("components")[DrawText.type]
     return new DrawText(
       {
-        ...attrs,
+        type: GraphicsType.Text,
         width: rect.width,
         height: rect.height,
-        style:this.design.setting.get("components").Text.style
+        style:this.design.setting.get("textStyle")
       },
       this.design,
       {

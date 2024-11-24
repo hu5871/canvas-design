@@ -8,6 +8,7 @@ import { Graphics } from "../graphics";
 export enum GraphicsType {
   Text = 'Text',
   Rect = 'Rect',
+  Line = "Line"
   // Template = "Template"
 }
 
@@ -18,7 +19,7 @@ export interface IComponentAttrs extends IGraphicsAttrs {
 
 
 export interface IComponentClassConstructor<T extends IComponentAttrs> {
-  new(attrs: T, design: Design, ): Graphics;
+  new(attrs: T, design: Design,): Graphics;
   type: GraphicsType;
 }
 

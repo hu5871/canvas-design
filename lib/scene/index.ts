@@ -115,13 +115,8 @@ export default class SceneGraph {
     this.templates.forEach(item => item.draw())
 
     const graphics = this.design.store.getTemplate() || this.design.store.getGraphics()
-
-    if (!(graphics instanceof Template)){
       graphics?.getParent()?.drawOutLine()
-    }else{
       graphics?.drawOutLine()
-    }
-
   }
 
   hitTest(e: IPoint) {

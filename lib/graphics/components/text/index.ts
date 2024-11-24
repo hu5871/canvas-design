@@ -17,7 +17,7 @@ export class DrawText extends Graphics<ITextAttrs>  {
 
 
   override customAttrs(attrs: Optional<ITextAttrs, 'state'|'__id'|'transform'|'type'|'field'>): void {
-    this.attrs.style = attrs.style ?? this.design.setting.settingConfig.components[GraphicsType.Text].style
+    this.attrs.style = attrs.style 
   }
 
   override  getJson(): ITextAttrs {

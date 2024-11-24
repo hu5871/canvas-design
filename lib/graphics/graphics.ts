@@ -11,6 +11,8 @@ import { omit } from "../utils/omit";
 import { UniqueId } from "../utils/uuid";
 import { getTransformAngle } from "../geo/geo_angle";
 import { recomputeTransformRect } from "../geo/geo_rect";
+import { ITransformRect } from "../control_handle_manager/types";
+import { resizeLine, resizeRect } from "../tool/resize";
 
 let STATE = 0;
 
@@ -96,13 +98,52 @@ export class Graphics<ATTRS extends IGraphicsAttrs = IGraphicsAttrs> {
         this.attrs.transform[5] = (partialAttrs.y)
       }
     }
+    if (partialAttrs.rotate !== undefined) {
+      this.setRotate(partialAttrs.rotate);
+    }
 
-    let attrs = omit(partialAttrs, 'x', 'y') as Partial<ATTRS>
+    let attrs = omit(partialAttrs, 'x', 'y','rotate') as Partial<ATTRS>
+  
     for (const key in attrs) {
       if (attrs[key as keyof ATTRS] !== undefined) {
         (this.attrs as any)[key as keyof ATTRS] = attrs[key as keyof ATTRS]
       }
     }
+  }
+
+  
+  /**
+   * calculate new attributes by control handle
+   */
+  calcNewAttrsByControlHandle(
+    /** 'se' | 'ne' | 'nw' | 'sw' | 'n' | 'e' | 's' | 'w' */
+    type: string,
+    newPos: IPoint,
+    oldRect: ITransformRect,
+    oldWorldTransform: IMatrixArr,
+    isShiftPressing = false,
+    isAltPressing = false,
+    flipWhenResize?: boolean,
+  ): Partial<ATTRS> {
+    const parentTf = this.getParentWorldTransform();
+    oldRect = {
+      width: oldRect.width,
+      height: oldRect.height,
+      transform: oldWorldTransform,
+    };
+    const rect =
+      this.attrs.height === 0
+        ? resizeLine(type, newPos, oldRect, {
+            keepPolarSnap: isShiftPressing,
+            scaleFromCenter: isAltPressing,
+          })
+        : resizeRect(type, newPos, oldRect, {
+            keepRatio: isShiftPressing,
+            scaleFromCenter: isAltPressing,
+            flip: flipWhenResize,
+          });
+    rect.transform = multiplyMatrix(invertMatrix(parentTf), rect.transform);
+    return rect as Partial<ATTRS>;
   }
 
 
@@ -197,8 +238,12 @@ export class Graphics<ATTRS extends IGraphicsAttrs = IGraphicsAttrs> {
         ...this.getSize(),
         transform: this.getWorldTransform(),
       },
-      tol,
+      tol+ this.getStrokeWidth() / 2,
     );
+  }
+
+  getStrokeWidth(){
+    return this.attrs.strokeWidth ?? 0;
   }
 
 

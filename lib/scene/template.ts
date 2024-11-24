@@ -1,12 +1,8 @@
 import Design from "..";
 import { Graphics } from "../graphics/graphics";
 import { createComponent } from "../graphics/components";
-import { DrawText } from "../graphics/components/text";
-import { GraphicsType, IComponentAttrs } from "../graphics/components/types";
-import { IGraphicsOpts, IPoint, IRect, ITemplateAttrs, Optional, } from "../types";
-import getDpr from "../utils/dpr";
-import { isPointInTransformedRect } from "../utils/hitTest";
-import { applyMatrix, invertMatrix } from "../geo/geo_matrix";
+import { IComponentAttrs } from "../graphics/components/types";
+import { IGraphicsOpts, ITemplateAttrs, Optional, } from "../types";
 import { EDIT } from "../tool/menu";
 
 export class Template extends Graphics<ITemplateAttrs> {
@@ -46,16 +42,6 @@ export class Template extends Graphics<ITemplateAttrs> {
   }
 
 
-  // override hitTest(point: IPoint): boolean {
-  //   const { width, height } = this.attrs
-  //   return isPointInTransformedRect(point,{
-  //     width,
-  //     height,
-  //     transform:this.getWorldTransform()
-  //   })
-  // }
-
-
   override getJson(): ITemplateAttrs {
     const children = this.childrenGraphics.map(item => {
       return { ...item.getJson() }
@@ -77,7 +63,7 @@ export class Template extends Graphics<ITemplateAttrs> {
     ctx.fill();
     ctx.clip();
     this.childrenGraphics?.forEach(graphics => {
-      graphics.draw()
+      graphics?.draw()
     })
     ctx.restore();
 
