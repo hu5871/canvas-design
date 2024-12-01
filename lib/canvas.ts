@@ -210,7 +210,14 @@ export default class Canvas {
     }
     
 
+
     this.design.sceneGraph.controlHandleManager.draw()
+
+    const graphics = this.design.store.getTemplate() || this.design.store.getGraphics()
+    if(graphics){
+      //绘制指示器
+      this.design.sceneGraph.drawIndicator(graphics)
+    }
 
     ctx.restore();
   }

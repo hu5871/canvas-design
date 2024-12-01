@@ -70,6 +70,20 @@ export interface IConfig {
   gridSnapY: number;
   selectionHitPadding:number; //选中距离填充
   flipObjectsWhileResizing:boolean;
+
+
+   // size 指示器
+   sizeIndicatorMinSize: number; // if length less this value, not render
+   sizeIndicatorOffset: number;
+   sizeIndicatorRectRadius: number
+   sizeIndicatorRectPadding: number[]
+   sizeIndicatorTextColor: string
+   sizeIndicatorTextFontStyle: string;
+   sizeIndicatorNumPrecision: number
+
+
+   selectBoxStroke:string;
+   selectBoxStrokeWidth: number;
 }
 
 

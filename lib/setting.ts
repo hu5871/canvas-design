@@ -58,6 +58,18 @@ const defaultConfig: IConfig = {
 
   selectionHitPadding:2,
   flipObjectsWhileResizing: true,
+
+   // size indicator
+   sizeIndicatorMinSize: 10, // if length less this value, not render
+   sizeIndicatorOffset: 10,
+   sizeIndicatorRectRadius: 2,
+   sizeIndicatorRectPadding: [0, 4, 0, 4],
+   sizeIndicatorTextColor: '#fff',
+   sizeIndicatorTextFontStyle: '12px sans-serif',
+   sizeIndicatorNumPrecision: 2,
+
+   selectBoxStroke: '#1592fe',
+   selectBoxStrokeWidth: 1.2,
 }
 
 export default class Setting {

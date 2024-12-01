@@ -40,3 +40,12 @@ export const calcRectBbox = (
 
   return { minX, minY, maxX, maxY };
 };
+
+
+/**
+ * 保留两位小数
+ * 如果是 0，丢弃 0
+ */
+export const remainDecimal = (num: number, precision = 2) => {
+  return Number(num.toFixed(precision));
+};

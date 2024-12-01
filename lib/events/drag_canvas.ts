@@ -99,7 +99,6 @@ export class DragCanvas {
     // 拖拽模版快捷键
     if(e.code == 'Delete'){
       this.active()
-       
       
     }
 

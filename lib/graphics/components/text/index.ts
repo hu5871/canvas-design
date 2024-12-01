@@ -35,6 +35,10 @@ export class DrawText extends Graphics<ITextAttrs>  {
     ctx.beginPath()
     ctx.font = `${fontSize}px sans-serif`
     ctx.textBaseline = textBaseline
+    ctx.rect(0, 0, width, height);
+    ctx.fillStyle = "transparent";
+    ctx.fill();
+    ctx.clip();
     for (const paint of fill ?? []) {
       switch (paint.type) {
         case PaintType.Solid: {
@@ -44,7 +48,8 @@ export class DrawText extends Graphics<ITextAttrs>  {
         }
       }
     }
-    ctx.fillText('文本',0,0);
+    ctx.fillText('文本',padding[0],padding[1]);
+    ctx.closePath();
     ctx.restore();
     this.boxLine()
   }

@@ -68,6 +68,11 @@ export class Graphics<ATTRS extends IGraphicsAttrs = IGraphicsAttrs> {
   customAttrs(_: Optional<ATTRS, 'state'|'__id'|'transform'|'type'|'field'>) {
   }
 
+
+  getTransform(): IMatrixArr {
+    return [...this.attrs.transform];
+  }
+
   getWorldTransform(): IMatrixArr {
     const parent = this.getParent();
     if (parent) {

@@ -20,6 +20,7 @@ export class DrawTextTool extends DrawGraphicsTool implements IBaseTool {
         type: GraphicsType.Text,
         width: rect.width,
         height: rect.height,
+        fill: this.design.setting.get("textFill"),
         style:this.design.setting.get("textStyle")
       },
       this.design,

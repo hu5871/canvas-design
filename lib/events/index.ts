@@ -28,9 +28,10 @@ export default class DesignEvent {
   isEnableDelete = true;
   isEnableContextMenu = true;
   private emitter = new EventEmitter<IDesignEvent>()
-  dragCanvas: DragCanvas = new DragCanvas(this.design, this)
+  dragCanvas: DragCanvas
 
   constructor(private design: Design) {
+    this.dragCanvas = new DragCanvas(this.design, this)
     this.listendragTemp(design.canvas.canvasElement)
   }
 
