@@ -7,6 +7,7 @@ import { ITool, IToolClassConstructor } from "./tpyes";
 import { DrawTextTool } from "./draw/draw_Text";
 import { DrawLineTool } from "./draw/draw_line";
 import { IPoint } from "../types";
+import { DrawBarcodeTool } from "./draw/draw_barcode";
 
 export const toolType = ["DRAWTEMPLATE", "select", 'drag'] as const;
 
@@ -31,6 +32,7 @@ export class Tool {
     this.registerTool(DrawTemplateTool)
     this.registerTool(DrawTextTool)
     this.registerTool(DrawLineTool)
+    this.registerTool(DrawBarcodeTool)
     this.registerTool(DragTool)
 
     this.setAction(SelectedTool.type)

@@ -26,7 +26,6 @@ const defaultConfig: IConfig = {
     textBaseline: 'top',
     padding: [12, 12]
   },
-
   stroke: {
     type: PaintType.Solid,
     attrs: {
@@ -36,6 +35,13 @@ const defaultConfig: IConfig = {
       a: 1
     }
   },
+  bwipOptions:{
+    bcid: 'code128',      
+    text: '0123456789',   
+    includetext: true,       
+    textxalign: 'center', 
+  },
+
   dragBlockStep: 4, // 如果移动距离小于此值，则不会发生拖曳处理程序
   strokeWidth: 1,
   handleStrokeWidth: 2,

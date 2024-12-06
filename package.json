@@ -20,6 +20,8 @@
     "rollup-plugin-typescript2": "^0.36.0"
   },
   "dependencies": {
+    "@bwip-js/browser": "^4.5.1",
+    "bwip-js": "^4.5.1",
     "lodash.clonedeep": "^4.5.0",
     "lodash.isequal": "^4.5.0",
     "lodash.omit": "^4.5.0",

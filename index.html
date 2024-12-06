@@ -38,6 +38,7 @@
           ChevronDownIcon,
           GestureRanslationIcon,
           SlashIcon,
+          BarcodeIcon,
         } = TDesignIconReact
         const Layout = TDesign.Layout
         const { Header, Content, Footer, Aside } = TDesign.Layout
@@ -212,6 +213,23 @@
                         }`}
                       >
                         <SlashIcon className=" w-[20px!important] h-[20px!important]" />
+                      </div>
+                    </TDesign.Tooltip>
+                    <TDesign.Tooltip
+                      content="条形码"
+                      destroyOnClose
+                      showArrow
+                      theme="default"
+                    >
+                      <div
+                        onClick={() => changeTool('drawBarcode')}
+                        className={`w-[40px] h-[40px]  rounded flex justify-center items-center ${
+                          currentTool === 'drawBarcode'
+                            ? 'bg-[#38bdf8] text-white'
+                            : ''
+                        }`}
+                      >
+                        <BarcodeIcon className=" w-[20px!important] h-[20px!important]" />
                       </div>
                     </TDesign.Tooltip>
                     <TDesign.Tooltip

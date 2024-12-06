@@ -2,6 +2,11 @@
 # yarn lockfile v1
 
 
+"@bwip-js/browser@^4.5.1":
+  "integrity" "sha512-gtlafU6rRVDvrCz1L4ewpCteFrHGfUI4bxTKhksOFjrBOU3/P8pEy63PB2spyz+lwBf3IblAN/LEPW6Cf90hfA=="
+  "resolved" "https://registry.npmmirror.com/@bwip-js/browser/-/browser-4.5.1.tgz"
+  "version" "4.5.1"
+
 "@isaacs/cliui@^8.0.2":
   "integrity" "sha512-O8jcjabXaleOG9DQ0+ARXWZBTfnP4WNAqzuiJK7ll44AmxGKv/J2M4TPjxjY3znBCfvBXFzucm1twdyFybFqEA=="
   "resolved" "https://registry.npmmirror.com/@isaacs/cliui/-/cliui-8.0.2.tgz"
@@ -169,6 +174,11 @@
   "integrity" "sha512-zhaCDicdLuWN5UbN5IMnFqNMhNfo919sH85y2/ea+5Yg9TsTkeZxpL+JLbp6cgYFS4sRLp3YV4S6yDuqVWHYOw=="
   "resolved" "https://registry.npmmirror.com/builtin-modules/-/builtin-modules-3.3.0.tgz"
   "version" "3.3.0"
+
+"bwip-js@^4.5.1":
+  "integrity" "sha512-83yQCKiIftz5YonnsTh6wIkFoHHWl+B/XaGWD1UdRw7aB6XP9JtyYP9n8sRy3m5rzL+Ch/RUPnu28UW0RrPZUA=="
+  "resolved" "https://registry.npmmirror.com/bwip-js/-/bwip-js-4.5.1.tgz"
+  "version" "4.5.1"
 
 "chokidar@^3.5.0":
   "integrity" "sha512-7VT13fmjotKpGipCW9JEQAusEPE+Ei8nl6/g4FBAmIm0GOOLMua9NDDo/DWp0ZAxCr3cPq5ZpBqmPAQgDda2Pw=="

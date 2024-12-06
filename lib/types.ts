@@ -46,7 +46,14 @@ export interface IConfig {
     width: number;
     height: number;
   },
-  dragBlockStep:number;
+  //条形码
+  bwipOptions: {
+    bcid: string;
+    text: string;
+    includetext: boolean;
+    textxalign: "left" | "center" | 'right'
+  },
+  dragBlockStep: number;
   textFill: IPaint[];
   textStyle: ITextStyle;
   stroke: IPaint;
@@ -68,22 +75,24 @@ export interface IConfig {
   gridViewY: number;
   gridSnapX: number;
   gridSnapY: number;
-  selectionHitPadding:number; //选中距离填充
-  flipObjectsWhileResizing:boolean;
+  selectionHitPadding: number; //选中距离填充
+  flipObjectsWhileResizing: boolean;
 
 
-   // size 指示器
-   sizeIndicatorMinSize: number; // if length less this value, not render
-   sizeIndicatorOffset: number;
-   sizeIndicatorRectRadius: number
-   sizeIndicatorRectPadding: number[]
-   sizeIndicatorTextColor: string
-   sizeIndicatorTextFontStyle: string;
-   sizeIndicatorNumPrecision: number
+  // size 指示器
+  sizeIndicatorMinSize: number; // if length less this value, not render
+  sizeIndicatorOffset: number;
+  sizeIndicatorRectRadius: number
+  sizeIndicatorRectPadding: number[]
+  sizeIndicatorTextColor: string
+  sizeIndicatorTextFontStyle: string;
+  sizeIndicatorNumPrecision: number
 
 
-   selectBoxStroke:string;
-   selectBoxStrokeWidth: number;
+  selectBoxStroke: string;
+  selectBoxStrokeWidth: number;
+
+
 }
 
 

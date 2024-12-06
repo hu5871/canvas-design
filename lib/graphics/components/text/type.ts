@@ -2,7 +2,7 @@ import { IComponentAttrs } from "../types";
 
 export  interface ITextAttrs  extends IComponentAttrs{
   style:ITextStyle
-  field:string
+
 }
 
 

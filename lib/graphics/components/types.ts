@@ -8,13 +8,15 @@ import { Graphics } from "../graphics";
 export enum GraphicsType {
   Text = 'Text',
   Rect = 'Rect',
-  Line = "Line"
+  Line = "Line",
+  Barcode = "Barcode"
   // Template = "Template"
 }
 
 
 export interface IComponentAttrs extends IGraphicsAttrs {
   type: GraphicsType;
+  field:string
 }
 
 
