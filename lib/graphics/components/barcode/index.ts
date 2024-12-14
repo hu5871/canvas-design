@@ -36,14 +36,8 @@ export class DrawBarcode extends Graphics<IBarcodeAttrs> {
     }
   }
 
-  override async draw(overrideStyle?: {
-    fill?: IPaint[];
-    stroke?: IPaint[];
-    strokeWidth?: number;
-    transform: IMatrixArr;
-  },) {
-    const { transform } = overrideStyle || this.attrs
-    const { bcid, includetext, text, textxalign } = this.attrs
+  override async draw() {
+    const { bcid, includetext, text, textxalign,transform } = this.attrs
 
     this.barcodeCtx.clearRect(0, 0, this.canvas.width, this.canvas.height)
 

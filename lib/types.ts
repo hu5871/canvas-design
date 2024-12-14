@@ -41,6 +41,13 @@ export interface IAppendViewRect {
   isGrid: Boolean;
 }
 
+export interface Columns {
+  field:string;
+  title:string;
+  width?:number;
+  columns?:Columns[]
+}
+
 export interface IConfig {
   template: {
     width: number;
@@ -52,6 +59,17 @@ export interface IConfig {
     text: string;
     includetext: boolean;
     textxalign: "left" | "center" | 'right'
+  },
+  //表格
+  tableOptions:{
+    defaultRowHeight:number,//默认行高
+    defaultHeaderRowHeight:number,//默认表头行高
+    autoColWidth: boolean,//自动平分列宽
+    columns:Columns[],
+
+    textColor:string;
+    borderColor:string;
+    textAlign: "left" | 'center' | 'right'
   },
   dragBlockStep: number;
   textFill: IPaint[];

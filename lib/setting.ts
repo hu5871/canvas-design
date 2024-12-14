@@ -41,7 +41,62 @@ const defaultConfig: IConfig = {
     includetext: true,       
     textxalign: 'center', 
   },
-
+  tableOptions:{
+    defaultRowHeight:40,//默认行高
+    defaultHeaderRowHeight:40,//默认表头行高
+    // defaultColWidth: 80,// 列宽
+    autoColWidth: true,//自动平分列宽
+    columns:[
+      {
+        field: 'id',
+        title: 'ID',
+        width: 100
+      },
+      {
+        field: 'info',
+        title: '信息',
+        width: 400,
+        columns:[
+          {
+            field: 'degree',
+            title: '学历',
+            width: 100,
+          },
+          {
+            field: 'user',
+            title: '用户',
+            columns:[
+              {
+                field: 'name',
+                title: '姓名',
+              },
+              {
+                field: 'gender',
+                title: '性别',
+              },
+            ]
+          },
+        ]
+      },
+      {
+        field: 'address',
+        title: '地址',
+        columns:[
+          {
+            field:'city',
+            title:"城市"
+          },
+          {
+            field:"street",
+            title:"街道"
+          }
+        ]
+      }
+    ],
+    textColor: "#a1a1a1",
+    textAlign:'center',
+    borderColor: "gray",
+  },
   dragBlockStep: 4, // 如果移动距离小于此值，则不会发生拖曳处理程序
   strokeWidth: 1,
   handleStrokeWidth: 2,

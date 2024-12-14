@@ -39,6 +39,7 @@
           GestureRanslationIcon,
           SlashIcon,
           BarcodeIcon,
+          TableIcon,
         } = TDesignIconReact
         const Layout = TDesign.Layout
         const { Header, Content, Footer, Aside } = TDesign.Layout
@@ -230,6 +231,23 @@
                         }`}
                       >
                         <BarcodeIcon className=" w-[20px!important] h-[20px!important]" />
+                      </div>
+                    </TDesign.Tooltip>
+                    <TDesign.Tooltip
+                      content="表格"
+                      destroyOnClose
+                      showArrow
+                      theme="default"
+                    >
+                      <div
+                        onClick={() => changeTool('drawTable')}
+                        className={`w-[40px] h-[40px]  rounded flex justify-center items-center ${
+                          currentTool === 'drawTable'
+                            ? 'bg-[#38bdf8] text-white'
+                            : ''
+                        }`}
+                      >
+                        <TableIcon className=" w-[20px!important] h-[20px!important]" />
                       </div>
                     </TDesign.Tooltip>
                     <TDesign.Tooltip

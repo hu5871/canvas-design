@@ -9,7 +9,8 @@ export enum GraphicsType {
   Text = 'Text',
   Rect = 'Rect',
   Line = "Line",
-  Barcode = "Barcode"
+  Barcode = "Barcode",
+  Table = "Table"
   // Template = "Template"
 }
 
