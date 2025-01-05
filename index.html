@@ -40,6 +40,7 @@
           SlashIcon,
           BarcodeIcon,
           TableIcon,
+          ChartBarIcon,
         } = TDesignIconReact
         const Layout = TDesign.Layout
         const { Header, Content, Footer, Aside } = TDesign.Layout
@@ -248,6 +249,23 @@
                         }`}
                       >
                         <TableIcon className=" w-[20px!important] h-[20px!important]" />
+                      </div>
+                    </TDesign.Tooltip>
+                    <TDesign.Tooltip
+                      content="柱状图"
+                      destroyOnClose
+                      showArrow
+                      theme="default"
+                    >
+                      <div
+                        onClick={() => changeTool('drawBar')}
+                        className={`w-[40px] h-[40px]  rounded flex justify-center items-center ${
+                          currentTool === 'drawBar'
+                            ? 'bg-[#38bdf8] text-white'
+                            : ''
+                        }`}
+                      >
+                        <ChartBarIcon className=" w-[20px!important] h-[20px!important]" />
                       </div>
                     </TDesign.Tooltip>
                     <TDesign.Tooltip

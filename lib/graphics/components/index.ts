@@ -1,6 +1,7 @@
 import Design from "../..";
 import { Template } from "../../scene/template";
 import { IGraphicsAttrs, IGraphicsOpts, IPoint, Optional } from "../../types";
+import { DrawBar } from "./bar";
 import { DrawBarcode } from "./barcode";
 import { DrawLine } from "./line";
 import { DrawRect } from "./rect";
@@ -14,6 +15,7 @@ const graphCtorMap = {
   [GraphicsType.Line]:DrawLine,
   [GraphicsType.Barcode]:DrawBarcode,
   [GraphicsType.Table] :DrawTable,
+  [GraphicsType.Bar]:DrawBar
   // [GraphicsType.Template] : Template
 };
 

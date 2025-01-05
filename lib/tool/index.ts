@@ -9,6 +9,7 @@ import { DrawLineTool } from "./draw/draw_line";
 import { IPoint } from "../types";
 import { DrawBarcodeTool } from "./draw/draw_barcode";
 import { DrawTableTool } from "./draw/draw_table";
+import { DrawBarTool } from "./draw/draw_bar";
 
 export const toolType = ["DRAWTEMPLATE", "select", 'drag'] as const;
 
@@ -36,6 +37,7 @@ export class Tool {
     this.registerTool(DrawBarcodeTool)
     this.registerTool(DrawTableTool)
     this.registerTool(DragTool)
+    this.registerTool(DrawBarTool)
 
     this.setAction(SelectedTool.type)
   }

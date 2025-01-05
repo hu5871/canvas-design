@@ -28,7 +28,7 @@ export class DrawText extends Graphics<ITextAttrs>  {
   override draw() {
     if(!this.isVisible()) return
     const { fontSize, textBaseline,padding } = this.attrs.style
-    const { transform,fill,width,height } = this.attrs
+    const { transform,fill,width,height,text } = this.attrs
     const ctx = this.design.canvas.ctx
     ctx.save();
     ctx.transform(...transform);
@@ -48,10 +48,10 @@ export class DrawText extends Graphics<ITextAttrs>  {
         }
       }
     }
-    ctx.fillText('文本',padding[0],padding[1]);
+    ctx.fillText(text,padding[0],padding[1]);
     ctx.closePath();
     ctx.restore();
-    this.boxLine()
+    // this.boxLine()
   }
 
 

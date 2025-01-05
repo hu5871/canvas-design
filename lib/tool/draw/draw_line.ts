@@ -20,6 +20,7 @@ export class DrawLineTool extends DrawGraphicsTool implements IBaseTool {
   }
 
   protected createGraphics(rect: IRect) {
+
     rect = normalizeRect(rect);
     const attrs = this.calcAttrs(rect);
     return new DrawLine(

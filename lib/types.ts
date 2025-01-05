@@ -42,10 +42,23 @@ export interface IAppendViewRect {
 }
 
 export interface Columns {
-  field:string;
-  title:string;
-  width?:number;
-  columns?:Columns[]
+  field: string;
+  title: string;
+  width?: number;
+  columns?: Columns[]
+}
+
+export interface Bar {
+  data: Record<string, number | string>[]
+  encode: ChartEncode
+  labelWidth:number;
+  xSafeMargin:number;
+  ySafeMargin:number;
+}
+
+export interface ChartEncode {
+  x: string;
+  y: string;
 }
 
 export interface IConfig {
@@ -61,16 +74,17 @@ export interface IConfig {
     textxalign: "left" | "center" | 'right'
   },
   //表格
-  tableOptions:{
-    defaultRowHeight:number,//默认行高
-    defaultHeaderRowHeight:number,//默认表头行高
+  tableOptions: {
+    defaultRowHeight: number,//默认行高
+    defaultHeaderRowHeight: number,//默认表头行高
     autoColWidth: boolean,//自动平分列宽
-    columns:Columns[],
+    columns: Columns[],
 
-    textColor:string;
-    borderColor:string;
+    textColor: string;
+    borderColor: string;
     textAlign: "left" | 'center' | 'right'
   },
+  bar:Bar,
   dragBlockStep: number;
   textFill: IPaint[];
   textStyle: ITextStyle;

@@ -97,6 +97,23 @@ const defaultConfig: IConfig = {
     textAlign:'center',
     borderColor: "gray",
   },
+  bar:{
+    data:[
+      { area: "东北", sales: 268 },
+      { area: "中南", sales: 413 },
+      { area: "华东", sales: 468},
+      { area: "华北", sales: 244},
+      { area: "西北", sales: 150 },
+      { area: "西南", sales: 130},
+    ],
+    labelWidth: 40,
+    xSafeMargin:40,
+    ySafeMargin:40,
+    encode:{
+      x:"area",
+      y:"sales"
+    }
+  },
   dragBlockStep: 4, // 如果移动距离小于此值，则不会发生拖曳处理程序
   strokeWidth: 1,
   handleStrokeWidth: 2,

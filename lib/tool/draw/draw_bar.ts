@@ -1,28 +1,29 @@
 import Design from "../..";
-import { IGraphicsOpts, IPoint, IRect } from "../../types";
+import { IRect } from "../../types";
 import { IBaseTool } from "../tpyes";
-import { createComponent } from "../../graphics/components";
 import { GraphicsType } from "../../graphics/components/types";
 import { DrawGraphicsTool } from "./draw_graphics";
 import { normalizeRect } from "../../scene";
-import { DrawText } from "../../graphics/components/text";
+import { DrawBar } from "../../graphics/components/bar";
 
-export class DrawTextTool extends DrawGraphicsTool implements IBaseTool {
-  static type="drawText"
+export class DrawBarTool extends DrawGraphicsTool implements IBaseTool {
+  static type = "drawBar"
   constructor(design: Design) {
     super(design)
   }
 
   protected createGraphics(rect: IRect) {
+
+
+    const bar = this.design.setting.get("bar")
+    
     rect = normalizeRect(rect);
-    return new DrawText(
+    return new DrawBar(
       {
-        type: GraphicsType.Text,
+        type: GraphicsType.Bar,
         width: rect.width,
         height: rect.height,
-        fill: this.design.setting.get("textFill"),
-        style:this.design.setting.get("textStyle"),
-        text:"文本"
+        ...bar,
       },
       this.design,
       {
