@@ -1,4 +1,4 @@
-import { type IMatrixArr ,type IPoint} from "../types";
+import { type IMatrixArr, type IPoint } from "../types";
 
 export const identityMatrix = (): IMatrixArr => {
   return [1, 0, 0, 1, 0, 0];
@@ -68,6 +68,9 @@ export class Matrix {
   /** @default 0 */
   public ty: number;
 
+  // 保存矩阵的历史状态
+  private previousState: IMatrixArr | null = null;
+
   /**
    * @param a - x scale
    * @param b - y skew
@@ -83,6 +86,29 @@ export class Matrix {
     this.d = d;
     this.tx = tx;
     this.ty = ty;
+  }
+
+  /**
+  * 保存当前矩阵的状态
+  */
+  private saveState(): void {
+    this.previousState = this.getArray();
+  }
+
+  /**
+  * 重置矩阵到上一次的状态
+  */
+  public resetToPrevious(): this {
+    if (this.previousState) {
+      const [a, b, c, d, tx, ty] = this.previousState;
+      this.a = a;
+      this.b = b;
+      this.c = c;
+      this.d = d;
+      this.tx = tx;
+      this.ty = ty;
+    }
+    return this;
   }
 
   /**
@@ -168,6 +194,8 @@ export class Matrix {
    * @returns This matrix. Good for chaining method calls.
    */
   public translate(x: number, y: number): this {
+    // 保存矩阵的当前状态
+    this.saveState();
     this.tx += x;
     this.ty += y;
 

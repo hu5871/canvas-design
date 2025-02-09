@@ -1,57 +1,88 @@
 
+export class AxisCalculator {
+    /**
+     * 计算刻度值
+     * @param min 最小值
+     * @param max 最大值
+     * @param tickCount 期望的刻度数量
+     * @param forceIncludeZero 是否强制包含 0
+     * @returns 刻度值数组
+     */
+    public calculateTicks(
+        min: number,
+        max: number,
+        tickCount: number = 5,
+        forceIncludeZero: boolean = true
+    ): number[] {
+        if (min === max) {
+            return [min];
+        }
 
+        // 如果需要强制包含 0，调整 min 和 max
+        if (forceIncludeZero) {
+            min = Math.min(min, 0);
+            max = Math.max(max, 0);
+        }
 
+        // 计算合适的刻度间隔
+        const interval = this.calculateNiceInterval(min, max, tickCount);
 
-// 根据给定的数值范围计算一个合适的 步长和 最大值。
-export const getRoundedDomains = (values: number[]): { maxValue: number; stepSize: number } => {
-  const maxValue = Math.max(...values);
-  //数量级
-  const orderOfMagnitude = Math.floor(Math.log10(maxValue / 5));
-  const stepSize = 10 * Math.pow(10, orderOfMagnitude);
-  return {
-    stepSize,
-    maxValue: stepSize * 5
-  };
-};
+        // 计算刻度值的起始点和结束点
+        const start = Math.floor(min / interval) * interval;
+        const end = Math.ceil(max / interval) * interval;
 
+        // 生成刻度值
+        const ticks: number[] = [];
+        for (let value = start; value <= end + interval * 0.5; value += interval) {
+            ticks.push(value);
+        }
 
-
-export function getNumberTicks(
-  values: number[],
-  range: [number, number]
-): { label: string; scale: number,rectPoint:number }[] {
-  const { maxValue, stepSize } = getRoundedDomains(values);
-  const ticks = [];
-  const rangeSpan = range[1] - range[0]
-  for (let i = 0; i * stepSize <= maxValue; i += 1) {
-    ticks.push(i * stepSize);
-  }
-  return ticks.map((tick,index) => {
-    const percent = values[index] / maxValue; // 计算百分比
-     
-    return {
-      label: `${tick}`,
-      scale: range[0] + (rangeSpan) * (tick / maxValue),
-      rectPoint:range[0] + (rangeSpan) * percent
+        return ticks;
     }
-    
-  });
+
+    /**
+     * 计算合适的刻度间隔
+     * @param min 最小值
+     * @param max 最大值
+     * @param tickCount 期望的刻度数量
+     * @returns 刻度间隔
+     */
+    private calculateNiceInterval(min: number, max: number, tickCount: number): number {
+        const range = max - min;
+
+        // 初始间隔
+        let interval = range / tickCount;
+
+        // 计算间隔的指数部分
+        const exponent = Math.floor(Math.log10(interval));
+        const fraction = interval / Math.pow(10, exponent);
+
+        // 常见的“漂亮”间隔
+        const niceFractions = [1, 2, 5, 10];
+        let niceFraction = niceFractions[0]; // 默认选择最小的间隔
+
+        // 找到最接近的“漂亮”间隔
+        for (const f of niceFractions) {
+            if (fraction <= f) {
+                niceFraction = f;
+                break;
+            }
+        }
+
+        // 计算最终的间隔
+        interval = niceFraction * Math.pow(10, exponent);
+
+        return interval;
+    }
+
+    /**
+     * 格式化刻度标签
+     * @param value 刻度值
+     * @param precision 小数位数
+     * @returns 格式化后的标签
+     */
+    public formatLabel(value: number, precision: number = 2): string {
+        return value.toFixed(precision);
+    }
 }
-
-
-export function getStringTicks(
-  values: string[],
-  range: [number, number]
-){
-  const cnt = values.length;
-  const step = (range[1] - range[0]) / cnt;
-  
-  return values.map((val, index) => ({
-    label: val as string,
-    lineX: range[0] + step * (index + 0.5),
-  }));
-}
-
-
-
 

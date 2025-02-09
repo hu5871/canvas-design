@@ -7,6 +7,7 @@ export const DOUBLE_PI = Math.PI * 2;
 export const HALF_PI = Math.PI / 2;
 
 const defaultConfig: IConfig = {
+  theme: "#38bdf8",
   template: {
     width: 300,
     height: 200
@@ -24,6 +25,7 @@ const defaultConfig: IConfig = {
     fontSize: 12,
     lineWidth: 1,
     textBaseline: 'top',
+    textAlign:"left",
     padding: [12, 12]
   },
   stroke: {
@@ -99,16 +101,48 @@ const defaultConfig: IConfig = {
   },
   bar:{
     data:[
-      { area: "东北", sales: 268 },
-      { area: "中南", sales: 413 },
-      { area: "华东", sales: 468},
-      { area: "华北", sales: 244},
-      { area: "西北", sales: 150 },
-      { area: "西南", sales: 130},
+      // { area: "东北", sales: 300 },
+      // { area: "中南", sales: 650 },
+      // { area: "华东", sales: 500},
+      // { area: "华北", sales: 200},
+      // { area: "西北", sales: 150 },
+      // { area: "西南", sales: 100},
+
+
+
+      { area: "东北", sales: 20 },
+      { area: "中南", sales: 50 },
+      { area: "华东", sales: 46},
+      { area: "华北", sales: -14},
+      { area: "西北", sales: 89 },
+      { area: "西南", sales: 100},
     ],
-    labelWidth: 40,
-    xSafeMargin:40,
-    ySafeMargin:40,
+    xSafeMargin:60,
+    ySafeMargin:30,
+    tickGap: 5,// 刻度和文本间隙
+    tickWidth: 5,// 每项刻度线条的长度
+    tickTextBaseline: "middle",
+    xTickTextAlign: 'center',
+    yTickTextAlign: 'right',
+    barCategoryGap: 8,
+    lineFill: {
+      type: PaintType.Solid,
+      attrs: {
+        r: 156,
+        g: 163,
+        b: 175,
+        a: 1
+      }
+    },
+    barFill: {
+      type: PaintType.Solid,
+      attrs: {
+        r: 91,
+        g: 143,
+        b: 249,
+        a: 1
+      }
+    },
     encode:{
       x:"area",
       y:"sales"

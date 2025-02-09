@@ -1,3 +1,4 @@
+import { TextAlign, TextBaseline } from "../../../types";
 import { IComponentAttrs } from "../types";
 
 export  interface ITextAttrs  extends IComponentAttrs{
@@ -9,6 +10,7 @@ export  interface ITextAttrs  extends IComponentAttrs{
 export interface ITextStyle{
   fontSize: number;
   lineWidth: number;
-  textBaseline:"alphabetic" | "bottom" | "hanging" | "ideographic" | "middle" | "top"
+  textAlign : TextAlign;
+  textBaseline : TextBaseline;
   padding:number[]
 }

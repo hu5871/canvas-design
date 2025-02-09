@@ -8,16 +8,16 @@ import getDpr from "../../../utils/dpr";
 import { parseRGBAStr } from "../../../utils/color";
 
 
-export class DrawText extends Graphics<ITextAttrs>  {
+export class DrawText extends Graphics<ITextAttrs> {
   type = GraphicsType.Text
   static type = GraphicsType.Text
-  constructor(attrs: Optional<ITextAttrs, 'state'|'__id'|'transform'|'type'|'field'>, design: Design, opts?: IGraphicsOpts) {
+  constructor(attrs: Optional<ITextAttrs, 'state' | '__id' | 'transform' | 'type' | 'field'>, design: Design, opts?: IGraphicsOpts) {
     super(attrs, design, opts)
   }
 
 
-  override customAttrs(attrs: Optional<ITextAttrs, 'state'|'__id'|'transform'|'type'|'field'>): void {
-    this.attrs.style = attrs.style 
+  override customAttrs(attrs: Optional<ITextAttrs, 'state' | '__id' | 'transform' | 'type' | 'field'>): void {
+    this.attrs.style = attrs.style
   }
 
   override  getJson(): ITextAttrs {
@@ -25,30 +25,32 @@ export class DrawText extends Graphics<ITextAttrs>  {
   }
 
 
-  override draw() {
-    if(!this.isVisible()) return
-    const { fontSize, textBaseline,padding } = this.attrs.style
-    const { transform,fill,width,height,text } = this.attrs
+  override draw(clip = true) {
+    if (!this.isVisible()) return
+    const { fontSize, textBaseline, padding, textAlign } = this.attrs.style
+    const { transform, fill, width, height, text } = this.attrs
     const ctx = this.design.canvas.ctx
     ctx.save();
     ctx.transform(...transform);
     ctx.beginPath()
     ctx.font = `${fontSize}px sans-serif`
     ctx.textBaseline = textBaseline
+    ctx.textAlign = textAlign
     ctx.rect(0, 0, width, height);
     ctx.fillStyle = "transparent";
+    if (clip) {
+      ctx.clip();
+    }
     ctx.fill();
-    ctx.clip();
     for (const paint of fill ?? []) {
       switch (paint.type) {
         case PaintType.Solid: {
           ctx.fillStyle = parseRGBAStr(paint.attrs);
-
           break;
         }
       }
     }
-    ctx.fillText(text,padding[0],padding[1]);
+    ctx.fillText(text, padding[0], padding[1]);
     ctx.closePath();
     ctx.restore();
     // this.boxLine()
@@ -72,12 +74,12 @@ export class DrawText extends Graphics<ITextAttrs>  {
   }
 
 
-  override  updateAttrs(partialAttrs: Partial<IGraphicsAttrs > & IAdvancedAttrs) {
-    
+  override  updateAttrs(partialAttrs: Partial<IGraphicsAttrs> & IAdvancedAttrs) {
+
     super.updateAttrs(partialAttrs)
   }
 
 
- 
-  
+
+
 }

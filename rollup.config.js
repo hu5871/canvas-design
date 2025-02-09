@@ -9,6 +9,7 @@ import commonjs from '@rollup/plugin-commonjs'
 
 export default {
   input: './lib/index.ts',
+  sourcemap:false,
   output: [
     {
       file: path.resolve(__dirname, './dist/index.esm.js'),

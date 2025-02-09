@@ -20,3 +20,27 @@ export function flattenArray<T, K extends keyof T>(
 
   return result.reverse(); // 因为栈是后进先出，需要反转结果
 }
+
+
+export function minBy(data:number[],target:number){
+  return data.reduce((prev, curr) => {
+    return (Math.abs(curr - target) < Math.abs(prev - target) ? curr : prev);
+  });
+}
+
+
+export  function sortedIndex(array:number[], value:number) {
+  let low = 0;
+  let high = array.length;
+
+  while (low < high) {
+    const mid = Math.floor((low + high) / 2);
+    if (array[mid] < value) {
+      low = mid + 1;
+    } else {
+      high = mid;
+    }
+  }
+
+  return low;
+}

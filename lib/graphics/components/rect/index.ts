@@ -9,7 +9,7 @@ import { parseRGBAStr } from "../../../utils/color";
 
 export class DrawRect extends Graphics<IRectAttrs>  {
   type = GraphicsType.Rect
-  constructor(attrs: Optional<IRectAttrs,'transform'|'state'> , design: Design, opts?: IGraphicsOpts) {
+  constructor(attrs: Optional<IRectAttrs, 'state' | '__id' | 'transform' | 'type' | 'field'>, design: Design, opts?: IGraphicsOpts) {
     super(attrs, design, opts)
   }
 

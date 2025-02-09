@@ -51,9 +51,16 @@ export interface Columns {
 export interface Bar {
   data: Record<string, number | string>[]
   encode: ChartEncode
-  labelWidth:number;
   xSafeMargin:number;
   ySafeMargin:number;
+  tickTextBaseline: TextBaseline;
+  xTickTextAlign: TextAlign;
+  yTickTextAlign: TextAlign;
+  barCategoryGap:number;
+  tickGap:number;
+  tickWidth:number;
+  lineFill:IPaint
+  barFill:IPaint;
 }
 
 export interface ChartEncode {
@@ -61,7 +68,12 @@ export interface ChartEncode {
   y: string;
 }
 
+
+export type TextAlign = "left" | 'right' | "center" | 'start' | 'end'
+export  type TextBaseline ="alphabetic" | "bottom" | "hanging" | "ideographic" | "middle" | "top"
+
 export interface IConfig {
+  theme:  string,
   template: {
     width: number;
     height: number;
