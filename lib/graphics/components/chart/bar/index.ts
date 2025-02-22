@@ -69,10 +69,6 @@ export class DrawBar extends Graphics<IBarAttrs> {
     })
   }
 
-
-
-
-
   getTickPoints() {
     const { data, encode, height, width } = this.attrs
     const { xSafeMargin, ySafeMargin, tickGap, tickWidth, yTickTextAlign, tickTextBaseline, barFill, lineFill, barCategoryGap } = this.design.setting.get("bar")
@@ -158,10 +154,11 @@ export class DrawBar extends Graphics<IBarAttrs> {
       }
     })
 
+    const columnBarWidth = (width - (xSafeMargin * 2) - (barCategoryGap * (values.length * 2))) / values.length
     this.rects = bars.map(({ value, height }) => {
       return {
         type: GraphicsType.Rect,
-        width: columnWidth,
+        width: columnBarWidth,
         height: height,
         transform: value,
         fill: [
