@@ -11,7 +11,8 @@ export enum GraphicsType {
   Line = "Line",
   Barcode = "Barcode",
   Table = "Table",
-  Bar = "Bar"
+  Bar = "Bar",
+  ChartLine ="ChartLine"
   // Template = "Template"
 }
 

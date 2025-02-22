@@ -10,7 +10,7 @@ import { ILineAttrs } from "./type";
 
 export class DrawLine extends Graphics<ILineAttrs> {
   type = GraphicsType.Line
-  static type = GraphicsType.Text
+  static type = GraphicsType.Line
   constructor(attrs: Optional<ILineAttrs, 'state' | '__id' | 'transform' | 'type' | 'field'>, design: Design, opts?: IGraphicsOpts) {
     super({...attrs,height: 0}, design, opts)
   }

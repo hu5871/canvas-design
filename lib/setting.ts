@@ -108,8 +108,6 @@ const defaultConfig: IConfig = {
       // { area: "西北", sales: 150 },
       // { area: "西南", sales: 100},
 
-
-
       { area: "东北", sales: 20 },
       { area: "中南", sales: 50 },
       { area: "华东", sales: 46},
@@ -140,6 +138,44 @@ const defaultConfig: IConfig = {
         r: 91,
         g: 143,
         b: 249,
+        a: 1
+      }
+    },
+    encode:{
+      x:"area",
+      y:"sales"
+    }
+  },
+  chartLine:{
+    data:[
+      // { area: "东北", sales: 300 },
+      // { area: "中南", sales: 650 },
+      // { area: "华东", sales: 500},
+      // { area: "华北", sales: 200},
+      // { area: "西北", sales: 150 },
+      // { area: "西南", sales: 100},
+
+      { area: "东北", sales: 20 },
+      { area: "中南", sales: 50 },
+      { area: "华东", sales: 46},
+      { area: "华北", sales: -14},
+      { area: "西北", sales: 89 },
+      { area: "西南", sales: 100},
+    ],
+    xSafeMargin:60,
+    ySafeMargin:30,
+    tickGap: 5,// 刻度和文本间隙
+    tickWidth: 5,// 每项刻度线条的长度
+    tickTextBaseline: "middle",
+    xTickTextAlign: 'center',
+    yTickTextAlign: 'right',
+    barCategoryGap: 8,
+    lineFill: {
+      type: PaintType.Solid,
+      attrs: {
+        r: 156,
+        g: 163,
+        b: 175,
         a: 1
       }
     },

@@ -48,7 +48,8 @@ export interface Columns {
   columns?: Columns[]
 }
 
-export interface Bar {
+
+export interface ChartCommonPorps{
   data: Record<string, number | string>[]
   encode: ChartEncode
   xSafeMargin:number;
@@ -60,7 +61,16 @@ export interface Bar {
   tickGap:number;
   tickWidth:number;
   lineFill:IPaint
+
+}
+
+export interface Bar extends ChartCommonPorps {
   barFill:IPaint;
+}
+
+
+
+export interface ChartLineSetting extends ChartCommonPorps {
 }
 
 export interface ChartEncode {
@@ -97,6 +107,7 @@ export interface IConfig {
     textAlign: "left" | 'center' | 'right'
   },
   bar:Bar,
+  chartLine:ChartLineSetting,
   dragBlockStep: number;
   textFill: IPaint[];
   textStyle: ITextStyle;
