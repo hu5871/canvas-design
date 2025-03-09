@@ -132,6 +132,8 @@ export class Axis {
     const range = [height - ySafeMargin, ySafeMargin] as [number, number]
     //柱子最大高度
     const rangeSpan = range[0]
+
+    //正数索引
     const positiveMinimum= scaleNumbers.findIndex(item=>{
       return item>=0
 
@@ -142,12 +144,15 @@ export class Axis {
         //最接近值
         const recentVal = minBy(scaleNumbers, val)
         const index = scaleNumbers.indexOf(recentVal);
-        let height = index * scaleStep
+
+        //从第一个正数开始计算高度
+        let height = (index- positiveMinimum) * scaleStep 
         const prev = scaleNumbers[index];
+
         if (prev !== val) {
           const next = scaleNumbers[index + 1];
           const last = scaleNumbers[index - 1]
-          // 计算step步进val值
+          // 计算step步进值
           const currStep = Math.abs(prev - (next ?? last));
           let diffValue = val - recentVal
           let percentage = 100
@@ -160,16 +165,13 @@ export class Axis {
             height -= scaleStep * percentage
           } else {
             height += scaleStep * percentage
-            height -= positiveMinimum * scaleStep
           }
         }
 
 
-        const barTf = new Matrix().translate(xSafeMargin, rangeSpan - height - strokeWidth / 2 )
+        const barTf = new Matrix().translate(xSafeMargin, rangeSpan - height -( positiveMinimum* scaleStep)- strokeWidth / 2 )
         barTf.translate(i * columnWidth, 0).translate(barCategoryGap, 0)
 
-
-        console.log(barTf.getArray())
         return {
           value: barTf.getArray(),
           height,
