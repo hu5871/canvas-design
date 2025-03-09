@@ -1,96 +1,152 @@
+import { PaintType } from './../../../../types';
 import { Matrix } from "../../../../geo/geo_matrix"
+import { Optional } from "../../../../types"
 import { minBy } from "../../../../utils/array"
 import { PI_OVER_TWO } from "../../../../utils/number"
+import { ILineAttrs } from "../../line/type"
+import { IRectAttrs } from "../../rect/type"
+import { ITextAttrs } from "../../text/type"
+
+
+
+export interface IAxisScale {
+  line: Optional<ILineAttrs, 'state' | '__id' | 'transform' | 'type' | 'field'>,
+  text: Optional<ITextAttrs, 'state' | '__id' | 'transform' | 'type' | 'field'>,
+  rect: Optional<IRectAttrs, 'state' | '__id' | 'transform' | 'type' | 'field'>,
+}
 
 
 
 export class Axis {
 
-  lines: any[] = []
-
   constructor() {
 
   }
 
+
+  finalScaleNumbers(values: number[], min: number, max: number) {
+    let scaleNumbers = this.calculatescales(min, max, 6)
+    const topscale = Math.max(...scaleNumbers)
+
+    //尽量减少不必要的刻度，避免臃肿导致刻度压缩
+    if (topscale > Math.max(...values) && scaleNumbers.length >= 8) {
+      scaleNumbers.pop()
+    }
+
+    return scaleNumbers
+  }
+
   axisLeft(options: {
+    type: 'bar' | 'line'
     values: number[],
     height: number,
     xSafeMargin: number,
     ySafeMargin: number,
     strokeWidth: number,
-    tickGap: number,
+    scaleGap: number,
     columnWidth: number,
-    yTickTextAlign: string,
-    barCategoryGap:number
+    yscaleTextAlign: string,
+    barCategoryGap: number
   }) {
 
-    const { values, height, xSafeMargin, ySafeMargin, strokeWidth, tickGap, columnWidth, yTickTextAlign,barCategoryGap } = options
-    //y坐标的坐标范围区间
-    const range = [height - ySafeMargin, ySafeMargin] as [number, number]
-    //柱子最大高度
-    const rangeSpan = range[0]
+    const { values, height, xSafeMargin, ySafeMargin, strokeWidth, scaleGap, columnWidth, yscaleTextAlign, barCategoryGap } = options
+
 
     const max = Math.max(...values)
     const min = Math.min(...values, 0)
 
-    let tickValues = this.calculateTicks(min, max, 6)
-    console.log(tickValues)
-    const topTick = Math.max(...tickValues)
 
-    //尽量减少不必要的刻度，避免臃肿导致刻度压缩
-    if (topTick > Math.max(...values) && tickValues.length >= 8) {
-      tickValues.pop()
-    }
+    const scaleNumbers = this.finalScaleNumbers(values, min, max)
 
-    const tickStep = ((height - ySafeMargin * 2) / (tickValues.length - 1))
+    const scaleStep = ((height - ySafeMargin * 2) / (scaleNumbers.length - 1))
     //y轴的刻度值
-    const ticks = Array.from({ length: tickValues.length }, (t, i) => {
+    const scales = Array.from({ length: scaleNumbers.length }, (t, i) => {
       return {
-        label: tickValues[i] ?? '',
-        point: new Matrix().translate(xSafeMargin, (height - ySafeMargin) - (i * tickStep)).getArray(),
+        label: scaleNumbers[i] ?? '',
+        point: new Matrix().translate(xSafeMargin, (height - ySafeMargin) - (i * scaleStep)).getArray(),
       }
     })
     const lines = [
-      ...Array.from({ length: tickValues.length }, (v, i) => {
+      ...Array.from({ length: scaleNumbers.length }, (v, i) => {
         return {
-          value: ticks[i].point
+          value: scales[i].point
         }
       })
     ]
 
 
     let textXPoint = 0
-    if (yTickTextAlign === 'right' || yTickTextAlign === 'end') {
-      textXPoint = xSafeMargin - tickGap
-    } else if (yTickTextAlign === 'center') {
+    if (yscaleTextAlign === 'right' || yscaleTextAlign === 'end') {
+      textXPoint = xSafeMargin - scaleGap
+    } else if (yscaleTextAlign === 'center') {
       textXPoint = xSafeMargin / 2
     } else {
       textXPoint = 0
     }
 
-    const yTickLabelTf = new Matrix().translate(textXPoint, 0)
-    yTickLabelTf.translate(0, 0)
+    const yscaleLabelTf = new Matrix().translate(textXPoint, 0)
+    yscaleLabelTf.translate(0, 0)
     const labels = [
-      ...Array.from({ length: tickValues.length }, (v, i) => {
-        yTickLabelTf.resetToPrevious()
+      ...Array.from({ length: scaleNumbers.length }, (v, i) => {
+        yscaleLabelTf.resetToPrevious()
         return {
-          value: yTickLabelTf.translate(0, ticks[i].point[5]).getArray(),
-          label:ticks[i].label
+          value: yscaleLabelTf.translate(0, scales[i].point[5]).getArray(),
+          label: scales[i].label
         }
       })
     ]
 
+
+
+
+
+    return {
+      lines,
+      labels,
+    }
+
+  }
+
+
+
+  axisRect(options: {
+    values: number[],
+  
+    height: number,
+    ySafeMargin: number,
+    xSafeMargin: number,
+    strokeWidth:number,
+    columnWidth:number,
+    barCategoryGap:number
+  }) {
+
+    const { values,  height, ySafeMargin, xSafeMargin ,strokeWidth,columnWidth,barCategoryGap} = options
+    const max = Math.max(...values)
+    const min = Math.min(...values, 0)
+
+    const scaleNumbers = this.finalScaleNumbers(values, min, max)
+
+    const scaleStep = ((height - ySafeMargin * 2) / (scaleNumbers.length - 1))
+
+    //y坐标的坐标范围区间
+    const range = [height - ySafeMargin, ySafeMargin] as [number, number]
+    //柱子最大高度
+    const rangeSpan = range[0]
+    const positiveMinimum= scaleNumbers.findIndex(item=>{
+      return item>=0
+
+    }) 
     const bars = [
       ...Array.from({ length: values.length }, (_, i) => {
         const val = values[i]
         //最接近值
-        const recentVal = minBy(tickValues, val)
-        const index = tickValues.indexOf(recentVal);
-        let height = index * tickStep
-        const prev = tickValues[index];
+        const recentVal = minBy(scaleNumbers, val)
+        const index = scaleNumbers.indexOf(recentVal);
+        let height = index * scaleStep
+        const prev = scaleNumbers[index];
         if (prev !== val) {
-          const next = tickValues[index + 1];
-          const last = tickValues[index - 1]
+          const next = scaleNumbers[index + 1];
+          const last = scaleNumbers[index - 1]
           // 计算step步进val值
           const currStep = Math.abs(prev - (next ?? last));
           let diffValue = val - recentVal
@@ -101,30 +157,26 @@ export class Axis {
 
           //负数
           if (isNegative) {
-            height -= tickStep * percentage
+            height -= scaleStep * percentage
           } else {
-            height += tickStep * percentage
+            height += scaleStep * percentage
+            height -= positiveMinimum * scaleStep
           }
         }
 
 
-        const barTf = new Matrix().translate(xSafeMargin, rangeSpan - height - strokeWidth / 2)
+        const barTf = new Matrix().translate(xSafeMargin, rangeSpan - height - strokeWidth / 2 )
         barTf.translate(i * columnWidth, 0).translate(barCategoryGap, 0)
+
+
+        console.log(barTf.getArray())
         return {
           value: barTf.getArray(),
           height,
         }
       })
     ]
-
-
-
-    return {
-      lines,
-      labels,
-      bars
-    }
-
+    return bars
   }
 
   axisBootom(options: {
@@ -133,12 +185,12 @@ export class Axis {
     xSafeMargin: number,
     ySafeMargin: number,
     strokeWidth: number,
-    tickGap: number,
-    tickWidth: number,
+    scaleGap: number,
+    scaleWidth: number,
     columnWidth: number
   }) {
 
-    const { labels, height, xSafeMargin, ySafeMargin, strokeWidth, tickGap, tickWidth, columnWidth } = options
+    const { labels, height, xSafeMargin, ySafeMargin, strokeWidth, scaleGap, scaleWidth, columnWidth } = options
 
 
 
@@ -150,7 +202,7 @@ export class Axis {
 
     xAxisLineTf.resetToPrevious()
 
-    tf.translate(0, tickGap + tickWidth)
+    tf.translate(0, scaleGap + scaleWidth)
 
     const lines = [
       {
@@ -192,14 +244,14 @@ export class Axis {
      * 计算刻度值
      * @param min 最小值
      * @param max 最大值
-     * @param tickCount 期望的刻度数量
+     * @param scaleCount 期望的刻度数量
      * @param forceIncludeZero 是否强制包含 0
      * @returns 刻度值数组
      */
-  public calculateTicks(
+  public calculatescales(
     min: number,
     max: number,
-    tickCount: number = 5,
+    scaleCount: number = 5,
     forceIncludeZero: boolean = true
   ): number[] {
     if (min === max) {
@@ -213,33 +265,33 @@ export class Axis {
     }
 
     // 计算合适的刻度间隔
-    const interval = this.calculateNiceInterval(min, max, tickCount);
+    const interval = this.calculateNiceInterval(min, max, scaleCount);
 
     // 计算刻度值的起始点和结束点
     const start = Math.floor(min / interval) * interval;
     const end = Math.ceil(max / interval) * interval;
 
     // 生成刻度值
-    const ticks: number[] = [];
+    const scales: number[] = [];
     for (let value = start; value <= end + interval * 0.5; value += interval) {
-      ticks.push(value);
+      scales.push(value);
     }
 
-    return ticks;
+    return scales;
   }
 
   /**
    * 计算合适的刻度间隔
    * @param min 最小值
    * @param max 最大值
-   * @param tickCount 期望的刻度数量
+   * @param scaleCount 期望的刻度数量
    * @returns 刻度间隔
    */
-  private calculateNiceInterval(min: number, max: number, tickCount: number): number {
+  private calculateNiceInterval(min: number, max: number, scaleCount: number): number {
     const range = max - min;
 
     // 初始间隔
-    let interval = range / tickCount;
+    let interval = range / scaleCount;
 
     // 计算间隔的指数部分
     const exponent = Math.floor(Math.log10(interval));

@@ -54,12 +54,12 @@ export interface ChartCommonPorps{
   encode: ChartEncode
   xSafeMargin:number;
   ySafeMargin:number;
-  tickTextBaseline: TextBaseline;
-  xTickTextAlign: TextAlign;
-  yTickTextAlign: TextAlign;
+  scaleTextBaseline: TextBaseline;
+  xscaleTextAlign: TextAlign;
+  yscaleTextAlign: TextAlign;
   barCategoryGap:number;
-  tickGap:number;
-  tickWidth:number;
+  scaleGap:number;
+  scaleWidth:number;
   lineFill:IPaint
 
 }

@@ -2,6 +2,12 @@ import { getSweepAngle } from "../geo/geo_angle";
 import { HALF_PI } from "../setting";
 import { IRect } from "../types";
 
+
+/**
+ * 调整矩形尺寸以实现极坐标吸附效果（例如45度对齐）
+ * @param rect 输入的矩形对象（包含宽高，可能带符号表示方向）
+ * @returns 调整后的矩形对象
+ */
 export const adjustSizeToKeepPolarSnap = (rect: IRect): IRect => {
   const radian = getSweepAngle(
     { x: 0, y: -1 },

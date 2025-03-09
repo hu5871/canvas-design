@@ -5,16 +5,16 @@ import { DrawLine } from "../../line";
 import { DrawRect } from "../../rect";
 import { DrawText } from "../../text";
 import { GraphicsType } from "../../types";
-import { IBarAttrs, IBarTick } from "./type";
-import { Axis } from '../common/Axis';
+import { IBarAttrs } from "./type";
+import { Axis, IAxisScale } from '../common/Axis';
 
 export class DrawBar extends Graphics<IBarAttrs> {
   static type = GraphicsType.Bar
-  rects: IBarTick["rect"][] = []
-  xAxisLines: IBarTick["line"][] = []
-  xAxisLabels: IBarTick["text"][] = []
-  yAxisLines: IBarTick["line"][] = []
-  yAxisLabels: IBarTick["text"][] = []
+  rects: IAxisScale["rect"][] = []
+  xAxisLines: IAxisScale["line"][] = []
+  xAxisLabels: IAxisScale["text"][] = []
+  yAxisLines: IAxisScale["line"][] = []
+  yAxisLabels: IAxisScale["text"][] = []
 
   constructor(attrs: Optional<IBarAttrs, 'state' | '__id' | 'transform' | 'type' | 'field'>, design: Design, opts?: IGraphicsOpts) {
     super(attrs, design, opts)
@@ -26,23 +26,23 @@ export class DrawBar extends Graphics<IBarAttrs> {
   override draw() {
     if (!this.isVisible()) return
     const { transform, fill, width, height } = this.attrs
-    this.getTickPoints()
+    this.getscalePoints()
     const ctx = this.design.canvas.ctx
     ctx.save();
     ctx.transform(...transform);
     ctx.beginPath()
 
     ctx.rect(0, 0, width, height);
-    ctx.strokeStyle="#ccc",
+    ctx.strokeStyle="transparent",
     ctx.stroke()
     ctx.clip();
 
-    this.drawTicksLine(this.xAxisLines)
-    this.drawTickText(this.xAxisLabels)
+    this.drawScalesLine(this.xAxisLines)
+    this.drawScaleText(this.xAxisLabels)
 
 
-    this.drawTicksLine(this.yAxisLines)
-    this.drawTickText(this.yAxisLabels)
+    this.drawScalesLine(this.yAxisLines)
+    this.drawScaleText(this.yAxisLabels)
     this.drawRect()
 
     ctx.closePath();
@@ -50,15 +50,15 @@ export class DrawBar extends Graphics<IBarAttrs> {
   }
 
 
-  drawTicksLine(ticks: IBarTick["line"][]) {
-    ticks?.forEach(t => {
+  drawScalesLine(scales: IAxisScale["line"][]) {
+    scales?.forEach(t => {
       new DrawLine(t, this.design).draw()
     })
   }
 
 
-  drawTickText(ticks: IBarTick["text"][]) {
-    ticks?.forEach(t => {
+  drawScaleText(scales: IAxisScale["text"][]) {
+    scales?.forEach(t => {
       new DrawText(t, this.design).draw(false)
     })
   }
@@ -69,11 +69,12 @@ export class DrawBar extends Graphics<IBarAttrs> {
     })
   }
 
-  getTickPoints() {
+  getscalePoints() {
     const { data, encode, height, width } = this.attrs
-    const { xSafeMargin, ySafeMargin, tickGap, tickWidth, yTickTextAlign, tickTextBaseline, barFill, lineFill, barCategoryGap } = this.design.setting.get("bar")
+    const { xSafeMargin, ySafeMargin, scaleGap, scaleWidth, yscaleTextAlign, scaleTextBaseline, barFill, lineFill, barCategoryGap } = this.design.setting.get("bar")
     const stroke = [lineFill]
-    const textBaseline = tickTextBaseline
+
+    const textBaseline = scaleTextBaseline
     const { fontSize } = this.design.setting.get("textStyle")
     const labels = data.map(item => item[encode.x]) as string[]
     const values = data.map(item => item[encode.y] as number)
@@ -87,8 +88,8 @@ export class DrawBar extends Graphics<IBarAttrs> {
       xSafeMargin,
       ySafeMargin,
       strokeWidth,
-      tickGap,
-      tickWidth,
+      scaleGap,
+      scaleWidth,
       columnWidth
     })
 
@@ -96,7 +97,7 @@ export class DrawBar extends Graphics<IBarAttrs> {
     this.xAxisLines = lineTfs.map(({ value }) => {
       return {
         type: GraphicsType.Line,
-        width: tickWidth,
+        width: scaleWidth,
         height: 0,
         stroke,
         strokeWidth,
@@ -117,15 +118,16 @@ export class DrawBar extends Graphics<IBarAttrs> {
     })
 
 
-    const { lines: ylineTfs, labels: ylabelTfs, bars } = axis.axisLeft({
+    const { lines: ylineTfs, labels: ylabelTfs } = axis.axisLeft({
+      type:'bar',
       values,
       height,
       xSafeMargin,
       ySafeMargin,
       strokeWidth,
-      tickGap,
+      scaleGap,
       columnWidth,
-      yTickTextAlign,
+      yscaleTextAlign,
       barCategoryGap
     })
 
@@ -145,13 +147,24 @@ export class DrawBar extends Graphics<IBarAttrs> {
     this.yAxisLabels = ylabelTfs.map(({ value, label }) => {
       return {
         type: GraphicsType.Text,
-        width: xSafeMargin - tickGap,
+        width: xSafeMargin - scaleGap,
         height: fontSize,
         transform: value,
         fill: this.design.setting.get("textFill"),
-        style: { ...this.design.setting.get("textStyle"), textBaseline, textAlign: yTickTextAlign, padding: [0, 0], },
+        style: { ...this.design.setting.get("textStyle"), textBaseline, textAlign: yscaleTextAlign, padding: [0, 0], },
         text: String(label),
       }
+    })
+
+
+    const bars= axis.axisRect({
+      values,
+      height,
+      ySafeMargin,
+      xSafeMargin,
+      strokeWidth,
+      columnWidth,
+      barCategoryGap
     })
 
     const columnBarWidth = (width - (xSafeMargin * 2) - (barCategoryGap * (values.length * 2))) / values.length

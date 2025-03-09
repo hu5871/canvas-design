@@ -117,11 +117,11 @@ const defaultConfig: IConfig = {
     ],
     xSafeMargin:60,
     ySafeMargin:30,
-    tickGap: 5,// 刻度和文本间隙
-    tickWidth: 5,// 每项刻度线条的长度
-    tickTextBaseline: "middle",
-    xTickTextAlign: 'center',
-    yTickTextAlign: 'right',
+    scaleGap: 5,// 刻度和文本间隙
+    scaleWidth: 5,// 每项刻度线条的长度
+    scaleTextBaseline: "middle",
+    xscaleTextAlign: 'center',
+    yscaleTextAlign: 'right',
     barCategoryGap: 8,
     lineFill: {
       type: PaintType.Solid,
@@ -164,11 +164,11 @@ const defaultConfig: IConfig = {
     ],
     xSafeMargin:60,
     ySafeMargin:30,
-    tickGap: 5,// 刻度和文本间隙
-    tickWidth: 5,// 每项刻度线条的长度
-    tickTextBaseline: "middle",
-    xTickTextAlign: 'center',
-    yTickTextAlign: 'right',
+    scaleGap: 5,// 刻度和文本间隙
+    scaleWidth: 5,// 每项刻度线条的长度
+    scaleTextBaseline: "middle",
+    xscaleTextAlign: 'center',
+    yscaleTextAlign: 'right',
     barCategoryGap: 8,
     lineFill: {
       type: PaintType.Solid,
