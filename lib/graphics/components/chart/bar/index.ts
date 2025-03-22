@@ -1,5 +1,5 @@
 import Design from "../../../..";
-import { IAdvancedAttrs,  IGraphicsOpts,Optional } from "../../../../types";
+import { IAdvancedAttrs, IGraphicsOpts, Optional } from "../../../../types";
 import { Graphics } from "../../../graphics";
 import { DrawLine } from "../../line";
 import { DrawRect } from "../../rect";
@@ -7,6 +7,8 @@ import { DrawText } from "../../text";
 import { GraphicsType } from "../../types";
 import { IBarAttrs } from "./type";
 import { Axis, IAxisScale } from '../common/Axis';
+import { Matrix } from "../../../../geo/geo_matrix";
+import { minBy } from "../../../../utils/array";
 
 export class DrawBar extends Graphics<IBarAttrs> {
   static type = GraphicsType.Bar
@@ -33,8 +35,8 @@ export class DrawBar extends Graphics<IBarAttrs> {
     ctx.beginPath()
 
     ctx.rect(0, 0, width, height);
-    ctx.strokeStyle="transparent",
-    ctx.stroke()
+    ctx.strokeStyle = "transparent",
+      ctx.stroke()
     ctx.clip();
 
     this.drawScalesLine(this.xAxisLines)
@@ -81,7 +83,7 @@ export class DrawBar extends Graphics<IBarAttrs> {
     const strokeWidth = this.design.setting.get("strokeWidth")
     // 计算每项分类的宽度
     const columnWidth = (width - xSafeMargin * 2) / labels.length
-    const axis= new Axis()
+    const axis = new Axis()
     const { lines: lineTfs, labels: labelTfs } = axis.axisBootom({
       labels,
       height,
@@ -119,7 +121,7 @@ export class DrawBar extends Graphics<IBarAttrs> {
 
 
     const { lines: ylineTfs, labels: ylabelTfs } = axis.axisLeft({
-      type:'bar',
+      type: 'bar',
       values,
       height,
       xSafeMargin,
@@ -157,7 +159,7 @@ export class DrawBar extends Graphics<IBarAttrs> {
     })
 
 
-    const bars= axis.axisRect({
+    const bars = this.scaleRect({
       values,
       height,
       ySafeMargin,
@@ -180,4 +182,72 @@ export class DrawBar extends Graphics<IBarAttrs> {
       };
     })
   }
+
+  scaleRect(options: {
+    values: number[],
+    height: number,
+    ySafeMargin: number,
+    xSafeMargin: number,
+    strokeWidth: number,
+    columnWidth: number,
+    barCategoryGap: number
+  }) {
+    const { values, height, ySafeMargin, xSafeMargin, strokeWidth, columnWidth, barCategoryGap } = options
+
+
+    const max = Math.max(...values)
+    const min = Math.min(...values, 0)
+    const scaleNumbers = new Axis().finalScaleNumbers(values, min, max)
+    const scaleStep = ((height - ySafeMargin * 2) / (scaleNumbers.length - 1))
+
+    //y坐标的坐标范围区间
+    const range = [height - ySafeMargin, ySafeMargin] as [number, number]
+    //柱子最大高度
+    const rangeSpan = range[0]
+
+    //正数索引
+    const positiveMinimum = scaleNumbers.findIndex(item => {
+      return item >= 0
+    })
+    const bars = [
+      ...Array.from({ length: values.length }, (_, i) => {
+        const val = values[i]
+        //最接近值
+        const recentVal = minBy(scaleNumbers, val)
+        const index = scaleNumbers.indexOf(recentVal);
+
+        //从第一个正数开始计算高度
+        let height = (index - positiveMinimum) * scaleStep
+        const prev = scaleNumbers[index];
+
+        if (prev !== val) {
+          const next = scaleNumbers[index + 1];
+          const last = scaleNumbers[index - 1]
+          // 计算step步进值
+          const currStep = Math.abs(prev - (next ?? last));
+          let diffValue = val - recentVal
+          let percentage = 100
+          const isNegative = diffValue < 0
+          diffValue = Math.abs(diffValue)
+          percentage = diffValue / currStep
+          //负数
+          if (isNegative) {
+            height -= scaleStep * percentage
+          } else {
+            height += scaleStep * percentage
+          }
+        }
+
+        const barTf = new Matrix().translate(xSafeMargin, rangeSpan - height - (positiveMinimum * scaleStep) - strokeWidth / 2)
+        barTf.translate(i * columnWidth, 0).translate(barCategoryGap, 0)
+
+        return {
+          value: barTf.getArray(),
+          height,
+        }
+      })
+    ]
+    return bars
+  }
+
 }

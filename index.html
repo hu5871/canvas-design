@@ -1,21 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
+
+<head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>canvas-design</title>
-    <link
-      rel="stylesheet"
-      href="https://unpkg.com/tdesign-react/dist/tdesign.min.css"
-    />
+    <link rel="stylesheet" href="https://unpkg.com/tdesign-react/dist/tdesign.min.css" />
     <style>
-      * {
-        margin: 0;
-        box-sizing: border-box;
-      }
+        * {
+            margin: 0;
+            box-sizing: border-box;
+        }
     </style>
-  </head>
-  <body>
+</head>
+
+<body>
     <div id="app" class="w-screen h-screen flex"></div>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
@@ -27,416 +26,408 @@
     <script src="./dist/index.umd.js"></script>
 
     <script type="text/babel">
-      function App() {
-        const { useEffect, useRef, useState } = React
-        const {
-          NavigationArrowIcon,
-          ArtboardIcon,
-          LettersZIcon,
-          ChevronRightIcon,
-          ChevronLeftIcon,
-          ChevronDownIcon,
-          GestureRanslationIcon,
-          SlashIcon,
-          BarcodeIcon,
-          TableIcon,
-          ChartBarIcon,
-          ChartLineIcon,
-        } = TDesignIconReact
-        const Layout = TDesign.Layout
-        const { Header, Content, Footer, Aside } = TDesign.Layout
-        const { Row, Col, Button, Drawer, Dropdown, Space, MessagePlugin } =
-          TDesign
-        const [design, setDesign] = useState(null)
-        const [currentTool, setTool] = useState('select')
-        const [rect, setRect] = useState(null)
-        const [menu, setMenu] = useState([])
-        const [zoom, setZoom] = useState(1)
-        const [contextPoint, setContextPoint] = useState(null)
-        const [launchedTree, setLaunchedTree] = useState(false)
-        const [launchedAttrs, setLaunchedAttrs] = useState(false)
+        function App () {
+            const { useEffect, useRef, useState } = React
+            const {
+                NavigationArrowIcon,
+                ArtboardIcon,
+                LettersZIcon,
+                ChevronRightIcon,
+                ChevronLeftIcon,
+                ChevronDownIcon,
+                GestureRanslationIcon,
+                SlashIcon,
+                BarcodeIcon,
+                TableIcon,
+                ChartBarIcon,
+                ChartLineIcon,
+            } = TDesignIconReact
+            const Layout = TDesign.Layout
+            const { Header, Content, Footer, Aside } = TDesign.Layout
+            const { Row, Col, Button, Drawer, Dropdown, Space, MessagePlugin } =
+                TDesign
+            const [design, setDesign] = useState(null)
+            const [currentTool, setTool] = useState('select')
+            const [rect, setRect] = useState(null)
+            const [menu, setMenu] = useState([])
+            const [zoom, setZoom] = useState(1)
+            const [contextPoint, setContextPoint] = useState(null)
+            const [launchedTree, setLaunchedTree] = useState(false)
+            const [launchedAttrs, setLaunchedAttrs] = useState(false)
 
-        function handlePoint(e) {
-          setContextPoint(e)
+            function handlePoint (e) {
+                setContextPoint(e)
+            }
+
+            function zoomChange (zoom) {
+                setZoom(zoom)
+            }
+
+            function failMsg (msg) {
+                MessagePlugin.error(msg)
+            }
+
+
+            useEffect(() => {
+                const data = JSON.parse(localStorage.getItem('data') ?? `[]`)
+                let designIns = new Design({
+                    target: '#design',
+                    data,
+                })
+
+                setDesign(designIns)
+                designIns.sceneGraph.tool.on('onChange', setTool)
+                designIns.sceneGraph.tool.on('editFail', failMsg)
+                designIns.sceneGraph.on('selectTemplate', setRect)
+                designIns.sceneGraph.on('watchRect', setRect)
+                designIns.sceneGraph.on('contentmenu', handlePoint)
+                designIns.sceneGraph.on('getMenuList', setMenu)
+
+                designIns.zoom.on('zoomChange', zoomChange)
+
+                return () => {
+                    designIns.destroy()
+                    setDesign(null)
+                }
+            }, [])
+
+            function changeTool (tool) {
+                design.activeTool(tool)
+            }
+
+            function handlerMenuClick (e, type) {
+                e.preventDefault()
+                e.stopPropagation()
+                design.sceneGraph.activeMenu(type)
+            }
+
+            function closeMenu (e) {
+                e.preventDefault()
+                e.stopPropagation()
+                setMenu(undefined)
+            }
+
+            function maskContextMenu (e) {
+                e.preventDefault()
+            }
+
+            function saveJson () {
+                const data = design.getJson()
+                localStorage.setItem('data', JSON.stringify(data))
+            }
+
+            const options = [
+                {
+                    content: '放大 ctrl+',
+                    value: 'add',
+                },
+
+                {
+                    content: '缩小 ctrl-',
+                    value: 'sub',
+                },
+            ]
+
+            const clickHandler = (data) => {
+                const type = data.value
+                switch (type) {
+                    case 'add':
+                        design?.zoom?.zoomIn({ isLevelZoom: true })
+                        break
+                    case 'sub':
+                        design?.zoom?.zoomOut({ isLevelZoom: true })
+                        break
+                    default:
+                        break
+                }
+            }
+            return (
+                <>
+                    <Layout>
+                        <Header className="border-b-2 ">
+                            <div className="flex h-full items-center">
+                                <div className="w-[100px] h-full"></div>
+                                <Space>
+                                    <TDesign.Tooltip
+                                        content="选择"
+                                        destroyOnClose
+                                        showArrow
+                                        theme="default"
+                                    >
+                                        <div
+                                            onClick={() => changeTool('select')}
+                                            className={`w-[40px] h-[40px]  rounded flex justify-center items-center ${currentTool === 'select'
+                                                ? 'bg-[#38bdf8] text-white'
+                                                : ''
+                                                }`}
+                                        >
+                                            <NavigationArrowIcon className="rotate-[-45deg] w-[20px!important] h-[20px!important] " />
+                                        </div>
+                                    </TDesign.Tooltip>
+                                    <TDesign.Tooltip
+                                        content="模板"
+                                        destroyOnClose
+                                        showArrow
+                                        theme="default"
+                                    >
+                                        <div
+                                            onClick={() => changeTool('DRAWTEMPLATE')}
+                                            className={`w-[40px] h-[40px]  rounded flex justify-center items-center ${currentTool === 'DRAWTEMPLATE'
+                                                ? 'bg-[#38bdf8] text-white'
+                                                : ''
+                                                }`}
+                                        >
+                                            <ArtboardIcon className=" w-[20px!important] h-[20px!important]" />
+                                        </div>
+                                    </TDesign.Tooltip>
+                                    <TDesign.Tooltip
+                                        content="文本"
+                                        destroyOnClose
+                                        showArrow
+                                        theme="default"
+                                    >
+                                        <div
+                                            onClick={() => changeTool('drawText')}
+                                            className={`w-[40px] h-[40px]  rounded flex justify-center items-center ${currentTool === 'drawText'
+                                                ? 'bg-[#38bdf8] text-white'
+                                                : ''
+                                                }`}
+                                        >
+                                            <LettersZIcon className=" w-[20px!important] h-[20px!important]" />
+                                        </div>
+                                    </TDesign.Tooltip>
+                                    <TDesign.Tooltip
+                                        content="线条"
+                                        destroyOnClose
+                                        showArrow
+                                        theme="default"
+                                    >
+                                        <div
+                                            onClick={() => changeTool('drawLine')}
+                                            className={`w-[40px] h-[40px]  rounded flex justify-center items-center ${currentTool === 'drawLine'
+                                                ? 'bg-[#38bdf8] text-white'
+                                                : ''
+                                                }`}
+                                        >
+                                            <SlashIcon className=" w-[20px!important] h-[20px!important]" />
+                                        </div>
+                                    </TDesign.Tooltip>
+                                    <TDesign.Tooltip
+                                        content="条形码"
+                                        destroyOnClose
+                                        showArrow
+                                        theme="default"
+                                    >
+                                        <div
+                                            onClick={() => changeTool('drawBarcode')}
+                                            className={`w-[40px] h-[40px]  rounded flex justify-center items-center ${currentTool === 'drawBarcode'
+                                                ? 'bg-[#38bdf8] text-white'
+                                                : ''
+                                                }`}
+                                        >
+                                            <BarcodeIcon className=" w-[20px!important] h-[20px!important]" />
+                                        </div>
+                                    </TDesign.Tooltip>
+                                    <TDesign.Tooltip
+                                        content="表格"
+                                        destroyOnClose
+                                        showArrow
+                                        theme="default"
+                                    >
+                                        <div
+                                            onClick={() => changeTool('drawTable')}
+                                            className={`w-[40px] h-[40px]  rounded flex justify-center items-center ${currentTool === 'drawTable'
+                                                ? 'bg-[#38bdf8] text-white'
+                                                : ''
+                                                }`}
+                                        >
+                                            <TableIcon className=" w-[20px!important] h-[20px!important]" />
+                                        </div>
+                                    </TDesign.Tooltip>
+                                    <TDesign.Tooltip
+                                        content="柱状图"
+                                        destroyOnClose
+                                        showArrow
+                                        theme="default"
+                                    >
+                                        <div
+                                            onClick={() => changeTool('drawBar')}
+                                            className={`w-[40px] h-[40px]  rounded flex justify-center items-center ${currentTool === 'drawBar'
+                                                ? 'bg-[#38bdf8] text-white'
+                                                : ''
+                                                }`}
+                                        >
+                                            <ChartBarIcon className=" w-[20px!important] h-[20px!important]" />
+                                        </div>
+                                    </TDesign.Tooltip>
+                                    <TDesign.Tooltip
+                                        content="折线图"
+                                        destroyOnClose
+                                        showArrow
+                                        theme="default"
+                                    >
+                                        <div
+                                            onClick={() => changeTool('drawChartLine')}
+                                            className={`w-[40px] h-[40px]  rounded flex justify-center items-center ${currentTool === 'drawChartLine'
+                                                ? 'bg-[#38bdf8] text-white'
+                                                : ''
+                                                }`}
+                                        >
+                                            <ChartLineIcon className=" w-[20px!important] h-[20px!important]" />
+                                        </div>
+                                    </TDesign.Tooltip>
+                                    <TDesign.Tooltip
+                                        content="拖拽画布 H"
+                                        destroyOnClose
+                                        showArrow
+                                        theme="default"
+                                    >
+                                        <div
+                                            onClick={() => changeTool('drag')}
+                                            className={`w-[40px] h-[40px]  rounded flex justify-center items-center ${currentTool === 'drag'
+                                                ? 'bg-[#38bdf8] text-white'
+                                                : ''
+                                                }`}
+                                        >
+                                            <GestureRanslationIcon className=" w-[20px!important] h-[20px!important]" />
+                                        </div>
+                                    </TDesign.Tooltip>
+                                </Space>
+
+                                <div className="absolute right-[20px]">
+                                    <Space className="flex items-center">
+                                        <button
+                                            onClick={saveJson}
+                                            className="  active:opacity-60   w-[80px] p-[8px] bg-[#38bdf8] text-white rounded"
+                                        >
+                                            保存
+                                        </button>
+                                        <Dropdown options={options} onClick={clickHandler}>
+                                            <Button
+                                                variant="text"
+                                                suffix={<ChevronDownIcon size="16" />}
+                                            >
+                                                {Math.round(zoom * 100)}%
+                                            </Button>
+                                        </Dropdown>
+                                    </Space>
+                                </div>
+                            </div>
+                        </Header>
+                        <Layout>
+                            <Drawer
+                                style={{ top: '54px' }}
+                                header={false}
+                                size={launchedTree ? '220px' : '50px'}
+                                closeBtn={false}
+                                placement="left"
+                                visible={true}
+                                showOverlay={false}
+                            >
+                                <div className="flex w-full h-full">
+                                    <div className="h-full w-[28px] hover:opacity-100 opacity-0 animate-pulse flex items-center justify-center">
+                                        {launchedTree ? (
+                                            <ChevronLeftIcon
+                                                onClick={() => setLaunchedTree(false)}
+                                                size="28px"
+                                            />
+                                        ) : (
+                                            <ChevronRightIcon
+                                                onClick={() => setLaunchedTree(true)}
+                                                size="28px"
+                                            />
+                                        )}
+                                    </div>
+                                </div>
+                            </Drawer>
+                            <Layout className="">
+                                <Content>
+                                    <div id="design" style={{ height: '100%' }}></div>
+                                    {menu && contextPoint ? (
+                                        <div
+                                            className="fixed top-0 bottom-0 left-0 right-0 z-0  "
+                                            onContextMenu={maskContextMenu}
+                                            onClick={closeMenu}
+                                        >
+                                            <div
+                                                className={`absolute top-[${contextPoint?.y}px] left-[${contextPoint?.x}px] w-[200px] bg-[red] z-[100]`}
+                                                onClick={handlerMenuClick}
+                                            >
+                                                {menu.map((item) => {
+                                                    return (
+                                                        <div>
+                                                            <Button
+                                                                onClick={(e) =>
+                                                                    handlerMenuClick(e, item.type)
+                                                                }
+                                                                disabled={item.disabled}
+                                                                className="w-full rounded-none"
+                                                                theme="default"
+                                                                variant="outline"
+                                                            >
+                                                                {item.disabled}
+                                                                {item.label}
+                                                            </Button>
+                                                        </div>
+                                                    )
+                                                })}
+                                            </div>
+                                        </div>
+                                    ) : null}
+                                </Content>
+                            </Layout>
+
+                            <Drawer
+                                style={{ top: '54px' }}
+                                header={false}
+                                size={launchedAttrs ? '320px' : '50px'}
+                                closeBtn={false}
+                                placement="right"
+                                visible={true}
+                                showOverlay={false}
+                            >
+                                <div className="flex flex-row-reverse h-full">
+                                    {launchedAttrs ? (
+                                        <div className="flex-1">
+                                            {rect ? (
+                                                <>
+                                                    <Row gutter={0}>
+                                                        <Col span={6}>x：{rect?.x}</Col>
+                                                        <Col span={6}>y：{rect?.y}</Col>
+                                                    </Row>
+                                                    <Row>
+                                                        <Col span={6}>width：{rect?.width}</Col>
+                                                        <Col span={6}>height：{rect?.height}</Col>
+                                                    </Row>
+                                                </>
+                                            ) : null}
+                                        </div>
+                                    ) : null}
+                                    <div className="h-full w-[28px] hover:opacity-100 opacity-0 animate-pulse flex items-center justify-center">
+                                        {launchedAttrs ? (
+                                            <ChevronRightIcon
+                                                onClick={() => setLaunchedAttrs(false)}
+                                                size="28px"
+                                            />
+                                        ) : (
+                                            <ChevronLeftIcon
+                                                onClick={() => setLaunchedAttrs(true)}
+                                                size="28px"
+                                            />
+                                        )}
+                                    </div>
+                                </div>
+                            </Drawer>
+                        </Layout>
+                    </Layout>
+                </>
+            )
         }
 
-        function zoomChange(zoom) {
-          setZoom(zoom)
-        }
-
-        function failMsg(msg) {
-          MessagePlugin.error(msg)
-        }
-        
-
-        useEffect(() => {
-          const data = JSON.parse(localStorage.getItem('data') ?? `[]`)
-          let designIns = new Design({
-            target: '#design',
-            data,
-          })
-
-          setDesign(designIns)
-          designIns.sceneGraph.tool.on('onChange', setTool)
-          designIns.sceneGraph.tool.on('editFail', failMsg)
-          designIns.sceneGraph.on('selectTemplate', setRect)
-          designIns.sceneGraph.on('watchRect', setRect)
-          designIns.sceneGraph.on('contentmenu', handlePoint)
-          designIns.sceneGraph.on('getMenuList', setMenu)
-
-          designIns.zoom.on('zoomChange', zoomChange)
-
-          return () => {
-            designIns.destroy()
-            setDesign(null)
-          }
-        }, [])
-
-        function changeTool(tool) {
-          design.activeTool(tool)
-        }
-
-        function handlerMenuClick(e, type) {
-          e.preventDefault()
-          e.stopPropagation()
-          design.sceneGraph.activeMenu(type)
-        }
-
-        function closeMenu(e) {
-          e.preventDefault()
-          e.stopPropagation()
-          setMenu(undefined)
-        }
-
-        function maskContextMenu(e) {
-          e.preventDefault()
-        }
-
-        function saveJson() {
-          const data = design.getJson()
-          localStorage.setItem('data', JSON.stringify(data))
-        }
-
-        const options = [
-          {
-            content: '放大 ctrl+',
-            value: 'add',
-          },
-
-          {
-            content: '缩小 ctrl-',
-            value: 'sub',
-          },
-        ]
-
-        const clickHandler = (data) => {
-          const type = data.value
-          switch (type) {
-            case 'add':
-              design?.zoom?.zoomIn({ isLevelZoom: true })
-              break
-            case 'sub':
-              design?.zoom?.zoomOut({ isLevelZoom: true })
-              break
-            default:
-              break
-          }
-        }
-        return (
-          <>
-            <Layout>
-              <Header className="border-b-2 ">
-                <div className="flex h-full items-center">
-                  <div className="w-[100px] h-full"></div>
-                  <Space>
-                    <TDesign.Tooltip
-                      content="选择"
-                      destroyOnClose
-                      showArrow
-                      theme="default"
-                    >
-                      <div
-                        onClick={() => changeTool('select')}
-                        className={`w-[40px] h-[40px]  rounded flex justify-center items-center ${
-                          currentTool === 'select'
-                            ? 'bg-[#38bdf8] text-white'
-                            : ''
-                        }`}
-                      >
-                        <NavigationArrowIcon className="rotate-[-45deg] w-[20px!important] h-[20px!important] " />
-                      </div>
-                    </TDesign.Tooltip>
-                    <TDesign.Tooltip
-                      content="模板"
-                      destroyOnClose
-                      showArrow
-                      theme="default"
-                    >
-                      <div
-                        onClick={() => changeTool('DRAWTEMPLATE')}
-                        className={`w-[40px] h-[40px]  rounded flex justify-center items-center ${
-                          currentTool === 'DRAWTEMPLATE'
-                            ? 'bg-[#38bdf8] text-white'
-                            : ''
-                        }`}
-                      >
-                        <ArtboardIcon className=" w-[20px!important] h-[20px!important]" />
-                      </div>
-                    </TDesign.Tooltip>
-                    <TDesign.Tooltip
-                      content="文本"
-                      destroyOnClose
-                      showArrow
-                      theme="default"
-                    >
-                      <div
-                        onClick={() => changeTool('drawText')}
-                        className={`w-[40px] h-[40px]  rounded flex justify-center items-center ${
-                          currentTool === 'drawText'
-                            ? 'bg-[#38bdf8] text-white'
-                            : ''
-                        }`}
-                      >
-                        <LettersZIcon className=" w-[20px!important] h-[20px!important]" />
-                      </div>
-                    </TDesign.Tooltip>
-                    <TDesign.Tooltip
-                      content="线条"
-                      destroyOnClose
-                      showArrow
-                      theme="default"
-                    >
-                      <div
-                        onClick={() => changeTool('drawLine')}
-                        className={`w-[40px] h-[40px]  rounded flex justify-center items-center ${
-                          currentTool === 'drawLine'
-                            ? 'bg-[#38bdf8] text-white'
-                            : ''
-                        }`}
-                      >
-                        <SlashIcon className=" w-[20px!important] h-[20px!important]" />
-                      </div>
-                    </TDesign.Tooltip>
-                    <TDesign.Tooltip
-                      content="条形码"
-                      destroyOnClose
-                      showArrow
-                      theme="default"
-                    >
-                      <div
-                        onClick={() => changeTool('drawBarcode')}
-                        className={`w-[40px] h-[40px]  rounded flex justify-center items-center ${
-                          currentTool === 'drawBarcode'
-                            ? 'bg-[#38bdf8] text-white'
-                            : ''
-                        }`}
-                      >
-                        <BarcodeIcon className=" w-[20px!important] h-[20px!important]" />
-                      </div>
-                    </TDesign.Tooltip>
-                    <TDesign.Tooltip
-                      content="表格"
-                      destroyOnClose
-                      showArrow
-                      theme="default"
-                    >
-                      <div
-                        onClick={() => changeTool('drawTable')}
-                        className={`w-[40px] h-[40px]  rounded flex justify-center items-center ${
-                          currentTool === 'drawTable'
-                            ? 'bg-[#38bdf8] text-white'
-                            : ''
-                        }`}
-                      >
-                        <TableIcon className=" w-[20px!important] h-[20px!important]" />
-                      </div>
-                    </TDesign.Tooltip>
-                    <TDesign.Tooltip
-                      content="柱状图"
-                      destroyOnClose
-                      showArrow
-                      theme="default"
-                    >
-                      <div
-                        onClick={() => changeTool('drawBar')}
-                        className={`w-[40px] h-[40px]  rounded flex justify-center items-center ${
-                          currentTool === 'drawBar'
-                            ? 'bg-[#38bdf8] text-white'
-                            : ''
-                        }`}
-                      >
-                        <ChartBarIcon className=" w-[20px!important] h-[20px!important]" />
-                      </div>
-                    </TDesign.Tooltip>
-                    <TDesign.Tooltip
-                      content="折线图"
-                      destroyOnClose
-                      showArrow
-                      theme="default"
-                    >
-                      <div
-                        onClick={() => changeTool('drawChartLine')}
-                        className={`w-[40px] h-[40px]  rounded flex justify-center items-center ${
-                          currentTool === 'drawChartLine'
-                            ? 'bg-[#38bdf8] text-white'
-                            : ''
-                        }`}
-                      >
-                        <ChartLineIcon className=" w-[20px!important] h-[20px!important]" />
-                      </div>
-                    </TDesign.Tooltip>
-                    <TDesign.Tooltip
-                      content="拖拽画布 H"
-                      destroyOnClose
-                      showArrow
-                      theme="default"
-                    >
-                      <div
-                        onClick={() => changeTool('drag')}
-                        className={`w-[40px] h-[40px]  rounded flex justify-center items-center ${
-                          currentTool === 'drag'
-                            ? 'bg-[#38bdf8] text-white'
-                            : ''
-                        }`}
-                      >
-                        <GestureRanslationIcon className=" w-[20px!important] h-[20px!important]" />
-                      </div>
-                    </TDesign.Tooltip>
-                  </Space>
-
-                  <div className="absolute right-[20px]">
-                    <Space className="flex items-center">
-                      <button
-                        onClick={saveJson}
-                        className="  active:opacity-60   w-[80px] p-[8px] bg-[#38bdf8] text-white rounded"
-                      >
-                        保存
-                      </button>
-                      <Dropdown options={options} onClick={clickHandler}>
-                        <Button
-                          variant="text"
-                          suffix={<ChevronDownIcon size="16" />}
-                        >
-                          {Math.round(zoom * 100)}%
-                        </Button>
-                      </Dropdown>
-                    </Space>
-                  </div>
-                </div>
-              </Header>
-              <Layout>
-                <Drawer
-                  style={{ top: '54px' }}
-                  header={false}
-                  size={launchedTree ? '220px' : '50px'}
-                  closeBtn={false}
-                  placement="left"
-                  visible={true}
-                  showOverlay={false}
-                >
-                  <div className="flex w-full h-full">
-                    <div className="h-full w-[28px] hover:opacity-100 opacity-0 animate-pulse flex items-center justify-center">
-                      {launchedTree ? (
-                        <ChevronLeftIcon
-                          onClick={() => setLaunchedTree(false)}
-                          size="28px"
-                        />
-                      ) : (
-                        <ChevronRightIcon
-                          onClick={() => setLaunchedTree(true)}
-                          size="28px"
-                        />
-                      )}
-                    </div>
-                  </div>
-                </Drawer>
-                <Layout className="">
-                  <Content>
-                    <div id="design" style={{ height: '100%' }}></div>
-                    {menu && contextPoint ? (
-                      <div
-                        className="fixed top-0 bottom-0 left-0 right-0 z-0  "
-                        onContextMenu={maskContextMenu}
-                        onClick={closeMenu}
-                      >
-                        <div
-                          className={`absolute top-[${contextPoint?.y}px] left-[${contextPoint?.x}px] w-[200px] bg-[red] z-[100]`}
-                          onClick={handlerMenuClick}
-                        >
-                          {menu.map((item) => {
-                            return (
-                              <div>
-                                <Button
-                                  onClick={(e) =>
-                                    handlerMenuClick(e, item.type)
-                                  }
-                                  disabled={item.disabled}
-                                  className="w-full rounded-none"
-                                  theme="default"
-                                  variant="outline"
-                                >
-                                  {item.disabled}
-                                  {item.label}
-                                </Button>
-                              </div>
-                            )
-                          })}
-                        </div>
-                      </div>
-                    ) : null}
-                  </Content>
-                </Layout>
-
-                <Drawer
-                  style={{ top: '54px' }}
-                  header={false}
-                  size={launchedAttrs ? '320px' : '50px'}
-                  closeBtn={false}
-                  placement="right"
-                  visible={true}
-                  showOverlay={false}
-                >
-                  <div className="flex flex-row-reverse h-full">
-                    {launchedAttrs ? (
-                      <div className="flex-1">
-                        {rect ? (
-                          <>
-                            <Row gutter={0}>
-                              <Col span={6}>x：{rect?.x}</Col>
-                              <Col span={6}>y：{rect?.y}</Col>
-                            </Row>
-                            <Row>
-                              <Col span={6}>width：{rect?.width}</Col>
-                              <Col span={6}>height：{rect?.height}</Col>
-                            </Row>
-                          </>
-                        ) : null}
-                      </div>
-                    ) : null}
-                    <div className="h-full w-[28px] hover:opacity-100 opacity-0 animate-pulse flex items-center justify-center">
-                      {launchedAttrs ? (
-                        <ChevronRightIcon
-                          onClick={() => setLaunchedAttrs(false)}
-                          size="28px"
-                        />
-                      ) : (
-                        <ChevronLeftIcon
-                          onClick={() => setLaunchedAttrs(true)}
-                          size="28px"
-                        />
-                      )}
-                    </div>
-                  </div>
-                </Drawer>
-              </Layout>
-            </Layout>
-          </>
-        )
-      }
-
-      const container = document.getElementById('app')
-      const root = ReactDOM.createRoot(container)
-      root.render(<App />)
+        const container = document.getElementById('app')
+        const root = ReactDOM.createRoot(container)
+        root.render(<App />)
     </script>
-  </body>
+</body>
+
 </html>

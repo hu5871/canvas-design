@@ -29,8 +29,8 @@ export class DrawLineTool extends DrawGraphicsTool implements IBaseTool {
         type: GraphicsType.Line,
         width: rect.width,
         height: rect.height,
-        stroke:[this.design.setting.get("stroke")],
-        strokeWidth:this.design.setting.get("strokeWidth"),
+        stroke: [this.design.setting.get("stroke")],
+        strokeWidth: this.design.setting.get("strokeWidth"),
 
       },
       this.design,
@@ -45,7 +45,7 @@ export class DrawLineTool extends DrawGraphicsTool implements IBaseTool {
   }
 
 
-   override updateGraphics(rect: IRect) {
+  override updateGraphics(rect: IRect) {
     const parent = this.drawingGraphics!.getParent();
     let x = rect.x;
     let y = rect.y;
@@ -55,7 +55,6 @@ export class DrawLineTool extends DrawGraphicsTool implements IBaseTool {
       x = point.x;
       y = point.y;
     }
-
     const attrs = this.calcAttrs({
       x,
       y,
@@ -71,10 +70,8 @@ export class DrawLineTool extends DrawGraphicsTool implements IBaseTool {
   private calcAttrs({ x, y, width, height }: IRect) {
     const rotate =
       getSweepAngle({ x: 0, y: -1 }, { x: width, y: height }) - HALF_PI;
-
     const cx = x + width / 2;
     const cy = y + height / 2;
-
     const tf = new Matrix()
       .translate(cx, cy)
       .rotate(rotate)

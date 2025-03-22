@@ -169,7 +169,6 @@ const defaultConfig: IConfig = {
     scaleTextBaseline: "middle",
     xscaleTextAlign: 'center',
     yscaleTextAlign: 'right',
-    barCategoryGap: 8,
     lineFill: {
       type: PaintType.Solid,
       attrs: {

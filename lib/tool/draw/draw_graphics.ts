@@ -83,7 +83,7 @@ export abstract class DrawGraphicsTool implements IBaseTool {
       width, // width may be negative
       height, // height may be negative
     };
-
+    
     if (this.drawingGraphics) {
       this.updateGraphics(rect);
     } else {

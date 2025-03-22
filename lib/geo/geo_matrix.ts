@@ -16,6 +16,8 @@ export const applyInverseMatrix = (tf: IMatrixArr, pt: IPoint): IPoint => {
   return applyMatrix(invertMatrix(tf), pt);
 };
 
+
+//变换矩阵的逆矩阵计算
 export const invertMatrix = (tf: IMatrixArr): IMatrixArr => {
   const a1 = tf[0];
   const b1 = tf[1];

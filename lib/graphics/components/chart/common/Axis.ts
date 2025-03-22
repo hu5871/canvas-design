@@ -46,7 +46,7 @@ export class Axis {
     scaleGap: number,
     columnWidth: number,
     yscaleTextAlign: string,
-    barCategoryGap: number
+    barCategoryGap?: number
   }) {
 
     const { values, height, xSafeMargin, ySafeMargin, strokeWidth, scaleGap, columnWidth, yscaleTextAlign, barCategoryGap } = options
@@ -96,10 +96,6 @@ export class Axis {
       })
     ]
 
-
-
-
-
     return {
       lines,
       labels,
@@ -108,78 +104,7 @@ export class Axis {
   }
 
 
-
-  axisRect(options: {
-    values: number[],
-  
-    height: number,
-    ySafeMargin: number,
-    xSafeMargin: number,
-    strokeWidth:number,
-    columnWidth:number,
-    barCategoryGap:number
-  }) {
-
-    const { values,  height, ySafeMargin, xSafeMargin ,strokeWidth,columnWidth,barCategoryGap} = options
-    const max = Math.max(...values)
-    const min = Math.min(...values, 0)
-
-    const scaleNumbers = this.finalScaleNumbers(values, min, max)
-
-    const scaleStep = ((height - ySafeMargin * 2) / (scaleNumbers.length - 1))
-
-    //y坐标的坐标范围区间
-    const range = [height - ySafeMargin, ySafeMargin] as [number, number]
-    //柱子最大高度
-    const rangeSpan = range[0]
-
-    //正数索引
-    const positiveMinimum= scaleNumbers.findIndex(item=>{
-      return item>=0
-
-    }) 
-    const bars = [
-      ...Array.from({ length: values.length }, (_, i) => {
-        const val = values[i]
-        //最接近值
-        const recentVal = minBy(scaleNumbers, val)
-        const index = scaleNumbers.indexOf(recentVal);
-
-        //从第一个正数开始计算高度
-        let height = (index- positiveMinimum) * scaleStep 
-        const prev = scaleNumbers[index];
-
-        if (prev !== val) {
-          const next = scaleNumbers[index + 1];
-          const last = scaleNumbers[index - 1]
-          // 计算step步进值
-          const currStep = Math.abs(prev - (next ?? last));
-          let diffValue = val - recentVal
-          let percentage = 100
-          const isNegative = diffValue < 0
-          diffValue = Math.abs(diffValue)
-          percentage = diffValue / currStep
-
-          //负数
-          if (isNegative) {
-            height -= scaleStep * percentage
-          } else {
-            height += scaleStep * percentage
-          }
-        }
-
-
-        const barTf = new Matrix().translate(xSafeMargin, rangeSpan - height -( positiveMinimum* scaleStep)- strokeWidth / 2 )
-        barTf.translate(i * columnWidth, 0).translate(barCategoryGap, 0)
-
-        return {
-          value: barTf.getArray(),
-          height,
-        }
-      })
-    ]
-    return bars
-  }
+ 
 
   axisBootom(options: {
     labels: string[],
@@ -193,8 +118,6 @@ export class Axis {
   }) {
 
     const { labels, height, xSafeMargin, ySafeMargin, strokeWidth, scaleGap, scaleWidth, columnWidth } = options
-
-
 
     //创建初始偏移
     const tf = new Matrix().translate(xSafeMargin, (height - ySafeMargin + strokeWidth / 2))

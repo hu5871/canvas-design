@@ -57,7 +57,6 @@ export interface ChartCommonPorps{
   scaleTextBaseline: TextBaseline;
   xscaleTextAlign: TextAlign;
   yscaleTextAlign: TextAlign;
-  barCategoryGap:number;
   scaleGap:number;
   scaleWidth:number;
   lineFill:IPaint
@@ -66,6 +65,7 @@ export interface ChartCommonPorps{
 
 export interface Bar extends ChartCommonPorps {
   barFill:IPaint;
+  barCategoryGap:number;
 }
 
 
