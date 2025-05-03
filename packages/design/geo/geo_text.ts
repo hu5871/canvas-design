@@ -1,0 +1,1 @@
+export const getWordWidth = (ctx:CanvasRenderingContext2D,word: string) => ctx.measureText(word).width;

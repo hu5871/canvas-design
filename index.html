@@ -41,6 +41,7 @@
                 TableIcon,
                 ChartBarIcon,
                 ChartLineIcon,
+                ChartPieIcon,
             } = TDesignIconReact
             const Layout = TDesign.Layout
             const { Header, Content, Footer, Aside } = TDesign.Layout
@@ -141,6 +142,7 @@
                         break
                 }
             }
+
             return (
                 <>
                     <Layout>
@@ -276,6 +278,23 @@
                                             <ChartLineIcon className=" w-[20px!important] h-[20px!important]" />
                                         </div>
                                     </TDesign.Tooltip>
+                                    <TDesign.Tooltip
+                                        content="饼图"
+                                        destroyOnClose
+                                        showArrow
+                                        theme="default"
+                                    >
+                                        <div
+                                            onClick={() => changeTool('drawPie')}
+                                            className={`w-[40px] h-[40px]  rounded flex justify-center items-center ${currentTool === 'drawPie'
+                                                ? 'bg-[#38bdf8] text-white'
+                                                : ''
+                                                }`}
+                                        >
+                                            <ChartPieIcon className=" w-[20px!important] h-[20px!important]" />
+                                        </div>
+                                    </TDesign.Tooltip>
+
                                     <TDesign.Tooltip
                                         content="拖拽画布 H"
                                         destroyOnClose
