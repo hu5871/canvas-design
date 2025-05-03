@@ -53,7 +53,6 @@ export class DrawText extends Graphics<ITextAttrs> {
     ctx.fillText(text, padding[0], padding[1]);
     ctx.closePath();
     ctx.restore();
-    // this.boxLine()
   }
 
 

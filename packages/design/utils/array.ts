@@ -44,3 +44,11 @@ export  function sortedIndex(array:number[], value:number) {
 
   return low;
 }
+
+//返回最大值的索引
+export function findMaxIndex(arr:number[]) {
+  return arr.reduce(
+      (acc, curr, index) => (curr > acc.max ? { max: curr, index } : acc),
+      { max: -Infinity, index: -1 }
+  ).index;
+}

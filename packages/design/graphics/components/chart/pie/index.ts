@@ -4,14 +4,21 @@ import Design from "../../../../";
 import { Matrix } from "../../../../geo/geo_matrix";
 import { getWordWidth } from "../../../../geo/geo_text";
 import { IConfig, IGraphicsOpts, IPoint, Optional, PaintType } from "../../../../types";
+import { findMaxIndex } from "../../../../utils/array";
 import { parseHexToRGBA } from "../../../../utils/color";
 import { Graphics } from "../../../graphics";
 import { DrawRect } from "../../rect";
+import { DrawText } from "../../text";
 import { GraphicsType } from "../../types";
 import { IChartPieAttrs, LableBox, PieData } from "./type";
 
 
 const ANGLE = - Math.PI / 2; // 从12点方向开始
+const rectWidth = 32
+const rectHeight= 18
+const spacing = 8;
+const cellGap = 16
+const rowLineGap = 4
 
 
 
@@ -35,7 +42,6 @@ export class DrawPie extends Graphics<IChartPieAttrs> {
     const rows = this.layoutElements(width, this.attrs.data, ctx)
 
 
-    this.topLable()
     ctx.save();
     ctx.transform(...transform);
     ctx.beginPath()
@@ -46,24 +52,28 @@ export class DrawPie extends Graphics<IChartPieAttrs> {
     let startAngle = ANGLE
 
     let i = 0
-    const firstRow = rows[0] 
-    const firstTotalWidth = firstRow.reduce((w:number,c:LableBox)=> w+ c.width,0)
-    const widthRemaining = width  - firstTotalWidth
-    const startPointX  =  widthRemaining / 2
+    //找出最长的一行计算两边距离
+    const rowIndex= findMaxIndex(rows.map(row=> row.length))
+    const row= rows[rowIndex]
+    const rowTotalWidth = row.reduce((w:number,c:LableBox)=> w+ c.width,0)
+    const widthRemaining = width  - rowTotalWidth
+    const startPointX  =  Math.max(widthRemaining / 2,0)
+    // console.log(startPointX)
     let startPointY = paddingTop 
+    let endPointY = 0
 
 
     rows.forEach((row, rowIndex) => {
-      const len = row.length
-      startPointY+= 28 + 16
-
+      let y = startPointY  + (rowIndex ?( rowIndex * (rectHeight+ rowLineGap)) : 0)
       let x = startPointX 
+
+      rows.length == rowIndex+1  && (endPointY = y+rectHeight)
       row.forEach(item => {
         i++
-        const rect = new DrawRect({
-          width: 32,
-          height: 28,
-          transform: new Matrix().translate(x,startPointY).getArray(),
+        new DrawRect({
+          width: rectWidth,
+          height: rectHeight,
+          transform: new Matrix().translate(x,y).getArray(),
           fill: [
             {
               type: PaintType.Solid,
@@ -71,51 +81,44 @@ export class DrawPie extends Graphics<IChartPieAttrs> {
             },
           ],
         }, this.design).draw()
+        const textWidth = getWordWidth(ctx,item.label)
+        new DrawText({
+          width: textWidth,
+          visible:true,
+          height: 12,
+          transform: new Matrix().translate(x + rectWidth + spacing,y+rectHeight/2).getArray(),
+          text:item.label,
+          fill:[{
+            type: PaintType.Solid,
+            attrs: {
+              r: 0,
+              g:0,
+              b:0,
+              a:.6
+            }
+          }],
+          style:{
+            fontSize: 12,
+            lineWidth: 1,
+            textBaseline:"middle",
+            textAlign: "left",
+            padding: [0,0]
+          }
+        }, this.design).draw(false)
         x+=item.width
       });
     })
+
+    const pieHieght= height - endPointY
     this.data.forEach((item, i) => {
-
-
-      // const sliceAngle = (item.value / this.total) * Math.PI * 2;
-      // this.drawSlice(ctx, startAngle, startAngle + sliceAngle, i);
-      // this.drawLabel(startAngle + sliceAngle/2, item);
-      // startAngle += sliceAngle;
+      const sliceAngle = (item.value / this.total) * Math.PI * 2;
+      this.drawSlice(ctx,width, pieHieght,endPointY,startAngle, startAngle + sliceAngle, i);
+      startAngle += sliceAngle;
     });
     ctx.closePath();
     ctx.restore();
   }
 
-  topLable() {
-    const { mode, fontSize, textAlign, textBaseline } = this.design.setting.get("pie").label
-    const ctx = this.design.canvas.ctx
-    const totalWidth = this.data.reduce((total, curr) => {
-      const text = curr.label
-      ctx.font = `${fontSize}px sans-serif`
-      ctx.textBaseline = textBaseline
-      ctx.textAlign = textAlign
-      return total + ctx.measureText(text).width;
-    }, 0)
-
-    const rectTotal = Array.from({ length: this.data.length }, () => {
-      return {
-        width: 32,
-        height: 16
-      }
-    }).reduce((total, curr) => {
-      return total + curr.width
-    }, 0)
-    const total = rectTotal + totalWidth
-
-    if (total > this.attrs.width) {
-
-    }
-
-    console.log("totalWidth", totalWidth)
-    return this.data.map(item => {
-
-    })
-  }
 
 
   /**
@@ -129,26 +132,23 @@ export class DrawPie extends Graphics<IChartPieAttrs> {
     const lines: LableBox[][] = [];
     let currentLine: LableBox[] = [];
     let currentWidth = 0;
-    const gap = 16
 
     // 遍历所有元素
-    for (const el of elements) {
-      const spacing = 8;
-
-      const labelWidth = getWordWidth(ctx, el.label) + 32  + spacing;
-      const potentialWidth = currentWidth + gap + labelWidth 
+    for (let i = 0;i < elements.length;i++) {
+      const el = elements[i]
+      const labelWidth = getWordWidth(ctx, el.label) + rectWidth  + spacing + cellGap;
+      const potentialWidth = currentWidth  + labelWidth 
       const cell = {
         ...el,
         width: labelWidth 
       }
       // 判断是否需要换行
-      if (potentialWidth > boxWidth) {
+      if (potentialWidth > boxWidth && i) {
         if (currentLine.length === 0) {
           // 处理超长元素：强制放入独立行
           lines.push(currentLine);
           currentLine = [];
           currentWidth = 0;
-      
           currentLine.push(cell);
         } else {
           // 当前行已满，换行处理
@@ -162,29 +162,19 @@ export class DrawPie extends Graphics<IChartPieAttrs> {
         currentWidth += spacing + labelWidth;
       }
     }
-
     // 添加最后一行
     if (currentLine.length > 0) {
       lines.push(currentLine);
     }
-
     return lines;
   }
 
-
-
-  get center() {
-    const { width, height } = this.attrs
-    return [width / 2, height / 2]
-  }
+ 
   get colors() {
     const { color } = this.design.setting.get("pie")
     return color
   }
 
-  get radius() {
-    return Math.max((Math.min(this.center[0], this.center[1]) - 20), 0);
-  }
 
   get data() {
     const { data } = this.design.setting.get("pie")
@@ -196,14 +186,16 @@ export class DrawPie extends Graphics<IChartPieAttrs> {
   }
 
 
-  drawSlice(ctx: CanvasRenderingContext2D, start: number, end: number, index: number) {
-    const { width, height } = this.attrs
-    const [x, y] = [width / 2, height / 2]
+  drawSlice(ctx: CanvasRenderingContext2D,width:number,height:number, startPointY:number,start: number, end: number, index: number) {
+    const center =  [width / 2, height / 2]
+    const min= Math.min(...center)
+    const radius =  Math.max(min - (min * 0.2),0) 
+    const [x,y] = [width / 2, startPointY+  height/2]
     ctx.save()
     ctx.beginPath();
     ctx.moveTo(x, y);
     ctx.arc(x, y,
-      this.radius,
+      radius,
       start, end
     );
     ctx.fillStyle = this.colors[index];
