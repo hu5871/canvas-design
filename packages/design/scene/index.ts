@@ -52,12 +52,17 @@ export default class SceneGraph {
   private menu: Menu
   controlHandleManager: ControlHandleManager
   grid: Grid
-  constructor(private design: Design, data: ITemplateAttrs[]) {
+  constructor(private design: Design, private data: ITemplateAttrs[]) {
     this.tool = new Tool(this.design)
     this.menu = new Menu(this.design)
     this.grid = new Grid(design);
+
     this.registerEvent()
     this.controlHandleManager = new ControlHandleManager(design)
+    this.createTemplates(data)
+  }
+
+  createTemplates(data: ITemplateAttrs[]){
     data?.forEach(attrs => {
       const { transform } = attrs
       const tmp = new Template(attrs, this.design, {
@@ -87,12 +92,33 @@ export default class SceneGraph {
     this.design.designEvent.on("pointerMove", this.onDrag)
     this.design.designEvent.on("pointerUp", this.onEnd)
     this.design.designEvent.on("contextmenu", this.contextmenu)
+    this.design.designEvent.on("delete",this.deleteGraphics.bind(this))
+  }
+
+  deleteGraphics(){
+    const graphics = this.design.store.getGraphics()
+    const temp= this.design.store.getTemplate()
+
+    if(graphics) {
+      const uuid= graphics.getId()
+      if (!uuid) return 
+      const temp=  this.getTemplates().find(t=> t.childrenGraphics.find(grap=> grap.getId() === uuid))
+      temp?.delete(uuid)
+    }else{
+      const uuid=  temp?.getId()
+      this.templates= this.templates.filter(t=> t !== temp)
+      this.data=  this.data.filter(t=> t.__id != uuid)
+      this.design.store.delete()
+    }
+    this.design.store.delete()
+    this.design.render()
   }
 
   contextmenu = (e: MouseEvent) => {
     this.emitter.emit("contentmenu", { x: e.clientX, y: e.clientY })
     this.emitMenu(this.menu.getMenu())
   }
+
 
 
   activeTool(tool: ToolType) {

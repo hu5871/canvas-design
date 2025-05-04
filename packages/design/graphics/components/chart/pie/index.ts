@@ -203,25 +203,4 @@ export class DrawPie extends Graphics<IChartPieAttrs> {
     ctx.closePath();
     ctx.restore();
   }
-
-
-  // drawLabel(angle:number, item:{value: number;
-  //   label: string;}) {
-  //   const { ctx } = this.design.canvas
-  //   const [cx, cy] = this.center;
-  //   const labelRadius = this.radius * 1.2;
-  //   const x = cx + Math.cos(angle) * labelRadius;
-  //   const y = cy + Math.sin(angle) * labelRadius;
-
-  //   ctx.save();
-  //   ctx.translate(x, y);
-  //   ctx.rotate(angle + Math.PI/2);
-  //   ctx.textAlign = 'center';
-  //   ctx.textBaseline = 'middle';
-  //   ctx.fillStyle = '#333';
-  //   ctx.font = '12px Arial';
-  //   ctx.fillText(`${item.label}`, 0, 0);
-  //   ctx.restore();
-  // }
-
 }

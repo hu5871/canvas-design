@@ -4,6 +4,7 @@ import { createComponent } from "./components";
 import { IComponentAttrs } from "./components/types";
 import { IGraphicsOpts, ITemplateAttrs, Optional, } from "../types";
 import { EDIT } from "../tool/menu";
+import { isWindows } from "../utils/platform";
 
 export class Template extends Graphics<ITemplateAttrs> {
   constructor(
@@ -12,6 +13,7 @@ export class Template extends Graphics<ITemplateAttrs> {
     opts?: IGraphicsOpts,
   ) {
     super(attrs, design, opts)
+    
   }
 
   isEdit() {
@@ -20,6 +22,16 @@ export class Template extends Graphics<ITemplateAttrs> {
 
   override customAttrs(attrs: Optional<ITemplateAttrs, 'state' | '__id' | 'transform' | 'field'>) {
     this.attrs.children = attrs?.children ?? []
+    this.attrs.children?.map(childAttrs => {
+      const comp = createComponent(this.design, childAttrs.type, childAttrs)
+      this.childrenGraphics.push(comp!)
+    })
+  }
+
+
+  delete(id: string){
+    this.attrs.children = this.attrs?.children?.filter(g=> g.__id != id)
+    this.childrenGraphics= []
     this.attrs.children?.map(childAttrs => {
       const comp = createComponent(this.design, childAttrs.type, childAttrs)
       this.childrenGraphics.push(comp!)
@@ -85,6 +97,10 @@ export class Template extends Graphics<ITemplateAttrs> {
     ctx.stroke();
     ctx.closePath();
     ctx.restore();
+  }
+
+
+  destroy() {
   }
 
 }

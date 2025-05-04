@@ -27,7 +27,7 @@ export class DragCanvas {
 
   inactive(){
     if (!this._active) {
-      return;
+      return;   
     }
     this._active = false;
     this.design.canvas.Cursor.setCursor('default');
@@ -92,17 +92,13 @@ export class DragCanvas {
     // 拖拽模版快捷键
     if(e.code == 'KeyH'){
       this.active()
-      this.design.activeTool('drag')
+      return this.design.activeTool('drag')
     }
 
 
-    // 拖拽模版快捷键
-    if(e.code == 'Delete'){
-      this.active()
-      
+    if(e.code == 'Delete' || e.code ==  'Backspace'){
+      return this.designEvent.deleteAction()
     }
-
-
   }
   private handleKeyUp = (e: KeyboardEvent) => {
   }
@@ -140,6 +136,7 @@ export class DragCanvas {
   }
 
   destroy(){
+    this.inactive()
     this.offEvent()
   }
 

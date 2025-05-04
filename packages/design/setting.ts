@@ -102,7 +102,7 @@ const defaultConfig: IConfig = {
   pie: {
     paddingTop:16,
     data: [
-      { value: 30, label: 'A' },
+      { value: 30, label: 'A你好啊' },
       { value: 50, label: 'B' },
       { value: 20, label: 'C' },
       { value: 20, label: 'D' },

@@ -13,6 +13,7 @@ export interface IDesignEvent {
   keyDown(e: KeyboardEvent): void
   keyUp(e: KeyboardEvent): void
   contextmenu(e: MouseEvent): void
+  delete():void
 }
 
 export default class DesignEvent {
@@ -63,6 +64,10 @@ export default class DesignEvent {
   }
   pointerUp = (e: PointerEvent) => {
     this.emitter.emit("pointerUp", e)
+  }
+
+  deleteAction(){
+    this.emitter.emit("delete")
   }
 
 
