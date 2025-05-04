@@ -69,7 +69,7 @@ export class DrawPie extends Graphics<IChartPieAttrs> {
 
       rows.length == rowIndex+1  && (endPointY = y+rectHeight)
       row.forEach(item => {
-        i++
+        
         new DrawRect({
           width: rectWidth,
           height: rectHeight,
@@ -106,6 +106,7 @@ export class DrawPie extends Graphics<IChartPieAttrs> {
           }
         }, this.design).draw(false)
         x+=item.width
+        i++
       });
     })
 
