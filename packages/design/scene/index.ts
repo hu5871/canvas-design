@@ -39,7 +39,7 @@ export const getRectByTwoPoint = (point1: IPoint, point2: IPoint): IRect => {
 
 interface EmitEvents {
   selectTemplate(rect: IRect | null): void;
-  watchRect(rect: IRect | undefined): void
+  attrsChange(rect: IRect | undefined): void
   contextmenu(): void
   getMenuList(emnu: IMenuItem[]): void
   [key: string | symbol]: (...args: any[]) => void
@@ -119,6 +119,9 @@ export default class SceneGraph {
     this.emitMenu(this.menu.getMenu())
   }
 
+  selectedGraphics(rect:IRect | undefined){
+    this.emitter.emit("selected",rect)
+  }
 
 
   activeTool(tool: ToolType) {
@@ -135,9 +138,8 @@ export default class SceneGraph {
     this.tool.onEnd(e)
   }
 
-
-  emitWatchRect(rect: IRect | undefined) {
-    this.emitter.emit("watchRect", rect)
+  attrsChange(rect: IRect | undefined) {
+    this.emitter.emit("attrsChange", rect)
   }
 
   emitMenu(menu: IMenuItem[]) {

@@ -176,6 +176,7 @@ export class ControlHandleManager {
   } | null {
     const handles: ControlHandle[] = [];
     const graphics = this.design.store.getGraphics()
+
     if (graphics) {
       handles.push(...Array.from(this.transformHandles.values()));
     } else {

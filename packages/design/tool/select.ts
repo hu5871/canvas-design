@@ -34,12 +34,11 @@ export class SelectedTool implements ITool {
 
   onStart(e: PointerEvent) {
     this.startPoint = this.design.canvas.getSceneCursorXY(e);
+
     const sceneGraph = this.design.sceneGraph
     //选中模版
     const curTemp = sceneGraph.hitTest(this.startPoint)
     let childGraphics: Graphics | undefined = undefined
-
-
     const handleInfo = this.design.sceneGraph.controlHandleManager.getHandleInfoByPoint(
       this.startPoint,
     );
@@ -57,12 +56,10 @@ export class SelectedTool implements ITool {
         childGraphics = curTemp.childrenGraphics.find(graphics => {
           return graphics.hitTest(this.startPoint, this.design.setting.get("selectionHitPadding") / this.design.zoom.getZoom())
         })
-
       }
       let graphics: Graphics | undefined = childGraphics || curTemp
-
       this.design.store.selectGraphics(graphics)
-      this.design.sceneGraph.emitWatchRect(graphics?.getRect())
+      this.design.sceneGraph.selectedGraphics(graphics?.getRect())
     }
 
     if (this.currStrategy) {

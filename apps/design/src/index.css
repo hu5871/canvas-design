@@ -8,3 +8,10 @@
   padding: 0;
   box-sizing: border-box;
 }
+
+
+
+.t-form-inline .t-form__item {
+  min-width: 0 !important;
+  margin: 0 !important;
+}

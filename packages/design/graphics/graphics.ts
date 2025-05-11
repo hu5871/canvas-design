@@ -116,6 +116,7 @@ export class Graphics<ATTRS extends IGraphicsAttrs = IGraphicsAttrs> {
         (this.attrs as any)[key as keyof ATTRS] = attrs[key as keyof ATTRS]
       }
     }
+    !this.opts?.noCollectUpdate && this.design.sceneGraph.attrsChange(this.getRect())
   }
 
   

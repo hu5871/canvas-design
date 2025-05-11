@@ -4,7 +4,7 @@ import DesignEvent from "./events/index";
 import Settting from "./setting";
 import SceneGraph from "./scene/index";
 import Zoom from "./zoom";
-import { ITemplateAttrs } from "./types";
+import { IRect, ITemplateAttrs } from "./types";
 import { Store } from "./store";
 import { ToolType } from "./tool/tpyes";
 
@@ -40,6 +40,9 @@ class Design {
   render() {
     this.canvas.render()
   }
+
+
+
 
 
   getJson(){

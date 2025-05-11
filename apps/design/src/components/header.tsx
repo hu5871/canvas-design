@@ -78,7 +78,7 @@ export const DesignHeader = () => {
   }
 
   return <>
-    <Header className="border-b  border-slate-100">
+    <Header className="border-b h-[65px] border-slate-100">
       <div className="w-full h-full flex justify-between items-center pl-[32px] ">
         <Space>
           {

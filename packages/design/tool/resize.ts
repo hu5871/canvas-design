@@ -147,9 +147,6 @@ export class Resize implements IBaseTool {
       new Matrix(...originWorldTf!).invert(),
     );
 
-  
-
-
     this.resizeGraphicsArray(prependedTransform.getArray())
     this.updateControls(selectedGraphics!);
 

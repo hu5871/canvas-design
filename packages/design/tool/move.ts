@@ -26,10 +26,10 @@ export class Move implements IBaseTool {
 
   onStart(e: PointerEvent) {
     let selectTemp = this.design.store.getTemplate()
-    const graphics=this.design.store.getGraphics()
+    const graphics = this.design.store.getGraphics()
     if (!selectTemp && !graphics) return
-  
-    graphics && (selectTemp=graphics.getParent()!)
+
+    graphics && (selectTemp = graphics.getParent()!)
     this.startPoint = this.design.canvas.getSceneCursorXY(e);
     this.startLocalPosition = selectTemp!.getLocalPosition()
 
@@ -37,7 +37,7 @@ export class Move implements IBaseTool {
       return graphics.getLocalPosition()
     })
 
-    graphics && (this.prevBBoxPos = boxToRect(graphics.getBbox())) 
+    graphics && (this.prevBBoxPos = boxToRect(graphics.getBbox()))
   }
 
   onDrag(e: PointerEvent) {
@@ -77,14 +77,12 @@ export class Move implements IBaseTool {
       this.design.render();
       return
     }
-    if (!tmp) return 
+    if (!tmp) return
     const startLocalPosition = this.startLocalPosition
     tmp?.updateAttrs({
       x: startLocalPosition!.x + dx,
       y: startLocalPosition!.y + dy
     });
-
-
     this.design.render();
   }
   onEnd() {

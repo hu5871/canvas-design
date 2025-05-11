@@ -2,9 +2,10 @@ import { useEffect, useRef, useState } from "react"
 import DesignContext from "./context/designContext"
 import Design from '@canvas/design'
 import { DesignHeader } from "./components/header";
-import { Button, Layout } from "tdesign-react";
+import { Button, Layout,  } from "tdesign-react";
 import { IPoint, IRect } from "@canvas/design/types";
 import { IMenuItem } from "@canvas/design/tool/menu";
+import {Attr} from "@/components/attr"
 const { Content } = Layout
 
 export const DesignEl = () => {
@@ -36,9 +37,13 @@ export const DesignEl = () => {
     console.log(rect)
   }
 
+  function setRectFun (r:IRect){
+    setRect(r)
+  }
+
 
   useEffect(() => {
-    if(!containerRef.current) return 
+    if (!containerRef.current) return
     const data = JSON.parse(localStorage.getItem('data') ?? `[]`)
     const designIns = new Design({
       target: containerRef.current,
@@ -48,8 +53,8 @@ export const DesignEl = () => {
     designIns.sceneGraph.on('contentmenu', handlePoint)
     designIns.sceneGraph.on('getMenuList', setMenu)
     designIns.sceneGraph.tool.on('editFail', failMsg)
-    designIns.sceneGraph.on('selectTemplate', setRect)
-    designIns.sceneGraph.on('watchRect', setRect)
+    designIns.sceneGraph.on('selected', setRectFun)
+    designIns.sceneGraph.on('attrsChange', setRectFun)
     setDesign(designIns)
     return () => {
       designIns.destroy()
@@ -60,8 +65,8 @@ export const DesignEl = () => {
     <DesignContext.Provider value={design}>
       <Layout className="h-full">
         <DesignHeader />
-        <Content >
-          <div ref={containerRef} id="design" style={{ height: '100%' }}></div>
+        <Content  id="content" className="flex"> 
+          <div ref={containerRef} id="design" className="flex-1" style={{ height: '100%' }}></div>
           {menu.length && contextPoint ? (
             <div
               className="fixed top-[0px] bottom-[0px] left-[0px] right-[0px] z-[99]  "
@@ -88,7 +93,6 @@ export const DesignEl = () => {
                         theme="default"
                         variant="outline"
                       >
-                        {item.disabled}
                         {item.label}
                       </Button>
                     </div>
@@ -97,7 +101,13 @@ export const DesignEl = () => {
               </div>
             </div>
           ) : null}
+
+          <div className="w-[350px] p-[16px] bg-[white] h-full"
+          >
+            {rect ?  <Attr rect={rect} /> : null} 
+          </div>
         </Content>
+
       </Layout>
     </DesignContext.Provider>
   )
