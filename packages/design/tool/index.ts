@@ -44,14 +44,8 @@ export class Tool {
     this.registerTool(DrawPieTool)
 
     this.setAction(SelectedTool.type)
-    this.registerEvent()
   }
 
-
-
-  registerEvent() {
-    this.design.designEvent.on("pointerMove", this.hover.bind(this))
-  }
 
 
   
@@ -98,6 +92,7 @@ export class Tool {
     this.currentTool?.onStart(e)
   }
   onDrag = (e: PointerEvent) => {
+    this.hover(e)
     if (!this.isPressing) return
     const dx = e.clientX - this.startPos.x;
     const dy = e.clientY - this.startPos.y;
