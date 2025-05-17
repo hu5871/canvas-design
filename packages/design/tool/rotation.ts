@@ -37,7 +37,7 @@ export class Rotation implements IBaseTool {
     this.selectedItem = this.design.store.getGraphics()
 
     if (!this.selectedItem) return
-    this.originWorldTf=this.selectedItem.getWorldTransform()
+    this.originWorldTf = this.selectedItem.getWorldTransform()
 
     const boundingRect = boxToRect(this.selectedItem.getBbox())
     this.selectedBoxCenter = {
@@ -56,6 +56,7 @@ export class Rotation implements IBaseTool {
     this.startBboxRotation = this.selectedItem.getRotate();
   }
   onDrag(e: PointerEvent) {
+
     this.lastPoint = this.design.canvas.getSceneCursorXY(e);
     this.rotateSelectedGraphics();
   }
@@ -86,22 +87,21 @@ export class Rotation implements IBaseTool {
     }
 
     // update cursor
-    
-      design.canvas.Cursor.setCursor(
-        getRotationCursor(this.handleType,{
-          ...selectedItem!.getSize(),
-          transform:selectedItem!.getWorldTransform()
-        }),
-      );
+    design.canvas.Cursor.setCursor(
+      getRotationCursor(this.handleType, {
+        ...selectedItem!.getSize(),
+        transform: selectedItem!.getWorldTransform()
+      }),
+    );
 
-      selectedItem!.dRotate(
-        this.dRotation,
-        this.originWorldTf!,
-        {
-          x: cxInSelectedElementBBox,
-          y: cyInSelectedElementBBox,
-        },
-      );
+    selectedItem!.dRotate(
+      this.dRotation,
+      this.originWorldTf!,
+      {
+        x: cxInSelectedElementBBox,
+        y: cyInSelectedElementBBox,
+      },
+    );
     this.design.render();
   }
   onEnd() {

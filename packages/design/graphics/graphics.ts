@@ -163,6 +163,14 @@ export class Graphics<ATTRS extends IGraphicsAttrs = IGraphicsAttrs> {
   }
 
 
+  getBox():ITransformRect {
+    return {
+      ...this.getSize(),
+      transform: this.getWorldTransform(),
+    }
+  }
+
+
   getJson(): ATTRS {
     return { ...this.attrs }
   }

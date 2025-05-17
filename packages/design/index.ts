@@ -41,29 +41,23 @@ class Design {
     this.canvas.render()
   }
 
-
-
-
-
   getJson(){
     return this.sceneGraph.templates.map(item=>{
       return {...item.getJson()}
     })
   }
-  
-  
+
   activeTool(type:ToolType){
     this.sceneGraph.activeTool(type)
   }
-
 
   getTools(){
     return this.sceneGraph
   }
 
-
   destroy(){
     this.designEvent.destroy()
+    this.sceneGraph.destroy()
   }
 
   on<K extends keyof EmitEvents>(eventName: K, handler: EmitEvents[K]) {

@@ -1,8 +1,12 @@
+import { ICursor } from "../cursor";
 import { Graphics } from "../graphics/graphics";
 import { IMatrixArr, IPoint } from "../types";
 import { ITransformRect } from "./types";
 
-
+type GetCursorFn = (
+  type: string,
+  selectedBox: ITransformRect | null,
+) => ICursor;
 type HitTest = (
   point: IPoint,
   tol: number,
@@ -18,6 +22,7 @@ export class ControlHandle {
   padding: number;
   /** rotation will follow rotated bbox */
   isTransformHandle: boolean;
+  getCursor: GetCursorFn;
   hitTest?: HitTest;
   constructor(attrs: {
     cx?: number;
@@ -28,6 +33,7 @@ export class ControlHandle {
     padding?: number;
     graphics: Graphics;
     hitTest?: HitTest;
+    getCursor: GetCursorFn;
     isTransformHandle?: boolean;
   }) {
     this.cx = attrs.cx ?? 0;
@@ -41,7 +47,7 @@ export class ControlHandle {
     this.type = attrs.type;
     this.padding = attrs.padding ?? 0;
     this.graphics = attrs.graphics;
-    // this.getCursor = attrs.getCursor;
+    this.getCursor = attrs.getCursor;
     if (attrs.hitTest) {
       this.hitTest = attrs.hitTest;
     }

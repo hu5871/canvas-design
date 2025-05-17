@@ -5,13 +5,14 @@
   "main": "dist/index.js",
   "module": "dist/index.js",
   "scripts": {
-    "dev":"rolldown -c rolldown.config.js -w"
+    "dev": "rolldown -c rolldown.config.js -w"
   },
   "license": "MIT",
   "devDependencies": {
     "@types/lodash.clonedeep": "^4.5.9",
     "@types/lodash.isequal": "^4.5.8",
     "@types/lodash.omit": "^4.5.9",
+    "@types/lodash.throttle": "^4.1.9",
     "@types/uuid": "^10.0.0",
     "rolldown": "1.0.0-beta.8"
   },
@@ -21,6 +22,7 @@
     "lodash.clonedeep": "^4.5.0",
     "lodash.isequal": "^4.5.0",
     "lodash.omit": "^4.5.0",
+    "lodash.throttle": "^4.1.1",
     "uuid": "^10.0.0"
   }
 }

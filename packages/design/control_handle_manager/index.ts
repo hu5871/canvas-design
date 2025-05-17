@@ -11,6 +11,7 @@ import { IGraphicsOpts, IPaint, IPoint, PaintType } from "../types";
 import { parseHexToRGBA } from "../utils/color";
 import { ControlHandle } from "./handler";
 import { ITransformRect } from "./types";
+import { getResizeCursor, getRotationCursor } from "./utils";
 
 
 const types = [
@@ -61,6 +62,9 @@ export class ControlHandleManager {
       design
     )
   }
+
+
+
 
   setCustomHandles(handles: ControlHandle[]) {
     this.customHandles = handles;
@@ -173,6 +177,7 @@ export class ControlHandleManager {
 
   getHandleInfoByPoint(hitPoint: IPoint): {
     handleName: string;
+    cursor: ICursor;
   } | null {
     const handles: ControlHandle[] = [];
     const graphics = this.design.store.getGraphics()
@@ -201,16 +206,16 @@ export class ControlHandleManager {
       }
 
       const isHit = handle.hitTest
-        ? handle.hitTest(hitPointVW,  handle.padding, box)
+        ? handle.hitTest(hitPointVW, handle.padding, box)
         : handle.graphics.hitTest(hitPointVW, handle.padding);
 
       if (isHit) {
         return {
           handleName: type,
+          cursor: handle.getCursor(type, graphics.getBox()),
         };
       }
     }
-
     return null;
   }
 
@@ -259,6 +264,8 @@ export class ControlHandleManager {
       graphics.draw();
     });
   }
+
+
 
 }
 
@@ -330,6 +337,7 @@ const createTransformHandles = (
     ),
     type: 'nw',
     // hitTest,
+    getCursor: getResizeCursor,
     padding: 3,
     // 
     isTransformHandle: true,
@@ -349,6 +357,7 @@ const createTransformHandles = (
       opts,
     ),
     type: 'ne',
+    getCursor: getResizeCursor,
     padding: 3,
     // 
     isTransformHandle: true,
@@ -367,7 +376,7 @@ const createTransformHandles = (
     ),
     type: 'se',
     padding: 3,
-    // 
+    getCursor: getResizeCursor,
     isTransformHandle: true,
   });
 
@@ -384,7 +393,7 @@ const createTransformHandles = (
     ),
     type: 'sw',
     padding: 3,
-    // 
+    getCursor: getResizeCursor,
     isTransformHandle: true,
   });
 
@@ -410,6 +419,7 @@ const createTransformHandles = (
       opts,
     ),
     type: 'nwRotation',
+    getCursor: getRotationCursor,
     isTransformHandle: true,
   });
 
@@ -423,6 +433,7 @@ const createTransformHandles = (
       opts,
     ),
     type: 'neRotation',
+    getCursor: getRotationCursor,
     isTransformHandle: true,
   });
 
@@ -436,6 +447,7 @@ const createTransformHandles = (
       opts,
     ),
     type: 'seRotation',
+    getCursor: getRotationCursor,
     isTransformHandle: true,
   });
 
@@ -449,6 +461,7 @@ const createTransformHandles = (
       opts,
     ),
     type: 'swRotation',
+    getCursor: getRotationCursor,
     isTransformHandle: true,
   });
 
@@ -465,7 +478,7 @@ const createTransformHandles = (
     ),
     type: 'n',
     hitTest,
-
+    getCursor: getResizeCursor,
     isTransformHandle: true,
   });
   const e = new ControlHandle({
@@ -478,7 +491,8 @@ const createTransformHandles = (
       opts,
     ),
     type: 'e',
-    hitTest,
+    hitTest, 
+    getCursor: getResizeCursor,
     isTransformHandle: true,
   });
 
@@ -492,7 +506,7 @@ const createTransformHandles = (
       opts,
     ),
     type: 's',
-    hitTest,
+    hitTest, getCursor: getResizeCursor,
     isTransformHandle: true,
   });
 
@@ -506,7 +520,8 @@ const createTransformHandles = (
       design,
       opts,
     ),
-    type: 'w',
+    type: 'w', 
+    getCursor: getResizeCursor,
     hitTest,
     isTransformHandle: true,
   });

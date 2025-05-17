@@ -289,4 +289,7 @@ export default class SceneGraph {
     this.emitter.off(eventName, handler);
   }
 
+  destroy(){
+    this.tool.destroy()
+  }
 }

@@ -103,7 +103,6 @@ export class Resize implements IBaseTool {
 
     graphics.updateAttrs(updatedAttrs);
     this.updatedAttrs=cloneDeep(updatedAttrs);
-
     this.updateControls(graphics);
   }
 

@@ -12,6 +12,8 @@ import { DrawTableTool } from "./draw/draw_table";
 import { DrawBarTool } from "./draw/draw_bar";
 import { DrawChartLineTool } from "./draw/draw_chart_line";
 import { DrawPieTool } from "./draw/draw_pie";
+import { getRotationCursor } from "../control_handle_manager/utils";
+import { throttle } from "../utils/loadsh";
 
 
 interface Event {
@@ -42,7 +44,24 @@ export class Tool {
     this.registerTool(DrawPieTool)
 
     this.setAction(SelectedTool.type)
+    this.registerEvent()
   }
+
+
+
+  registerEvent() {
+    this.design.designEvent.on("pointerMove", this.hover.bind(this))
+  }
+
+
+  
+
+  hover = throttle((e) => {
+    const point = this.design.canvas.getSceneCursorXY(e);
+    const controlHandleManager = this.design.sceneGraph.controlHandleManager;
+    const handleInfo = controlHandleManager.getHandleInfoByPoint(point);
+    this.design.canvas.Cursor.setCursor(handleInfo?.cursor || 'default');
+  }, 20);
 
   //注册工具
   private registerTool(toolCtor: IToolClassConstructor) {
@@ -67,7 +86,7 @@ export class Tool {
   }
 
   getTools() {
-    const tools = Array.from(this.toolMap, ([key, value]):{key:ToolType,value:string} => ({ key, value: value.toolName }))
+    const tools = Array.from(this.toolMap, ([key, value]): { key: ToolType, value: string } => ({ key, value: value.toolName }))
     return tools
   }
 
@@ -108,5 +127,9 @@ export class Tool {
 
   off<K extends keyof Event>(eventName: K, handler: Event[K]) {
     this.emitter.off(eventName, handler);
+  }
+
+  destroy() {
+    this.design.designEvent.off("pointerMove", this.hover.bind(this))
   }
 }

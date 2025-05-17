@@ -1,5 +1,7 @@
 import { ICursor } from "../cursor";
 import { checkTransformFlip, getTransformAngle, normalizeDegree } from "../geo/geo_angle";
+import { Matrix } from "../geo/geo_matrix";
+import { HALF_PI } from "../setting";
 import { ITransformRect } from "./types";
 
 
@@ -39,4 +41,60 @@ export const getRotationCursor = (
   );
   const r = { type: 'rotation', degree } as const;
   return r;
+};
+
+
+
+export const getResizeCursor = (
+  type: string,
+  selectedBox: ITransformRect | null,
+): ICursor => {
+  if (!selectedBox) {
+    return 'default';
+  }
+  if (selectedBox.height === 0) {
+    // be considered as a line
+    return 'move';
+  }
+
+  if (type === 'n' || type === 's') {
+    const heightTransform = new Matrix()
+      .rotate(HALF_PI)
+      .prepend(new Matrix(...selectedBox.transform))
+      .rotate(HALF_PI);
+    const heightRotate = getTransformAngle([
+      heightTransform.a,
+      heightTransform.b,
+      heightTransform.c,
+      heightTransform.d,
+      heightTransform.tx,
+      heightTransform.ty,
+    ]);
+    const degree = rad2Deg(heightRotate);
+    return { type: 'resize', degree };
+  }
+
+  const rotation = getTransformAngle(selectedBox.transform);
+  const isFlip = checkTransformFlip(selectedBox.transform);
+
+  let dDegree = 0;
+  switch (type) {
+    case 'se':
+    case 'nw':
+      dDegree = -45;
+      break;
+    case 'ne':
+    case 'sw':
+      dDegree = 45;
+      break;
+    case 'e':
+    case 'w':
+      dDegree = 90;
+      break;
+    default:
+      console.warn('unknown type', type);
+  }
+
+  const degree = rad2Deg(rotation) + (isFlip ? -dDegree : dDegree);
+  return { type: 'resize', degree };
 };
