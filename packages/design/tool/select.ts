@@ -59,7 +59,7 @@ export class SelectedTool implements ITool {
       }
       let graphics: Graphics | undefined = childGraphics || curTemp
       this.design.store.selectGraphics(graphics)
-      this.design.sceneGraph.selectedGraphics(graphics?.getRect())
+      this.design.sceneGraph.selectedGraphics(graphics ? {...graphics.getGraphicsInfo()} : undefined)
     }
 
     if (this.currStrategy) {

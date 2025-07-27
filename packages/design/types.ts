@@ -19,6 +19,11 @@ export interface IRect {
   height: number;
 }
 
+
+export interface IGraphicsInfo extends IRect {
+  rotate: number;
+}
+
 export interface IBox {
   minX: number;
   minY: number;

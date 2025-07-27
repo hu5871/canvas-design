@@ -3,7 +3,7 @@ import DesignContext from "./context/designContext"
 import Design from '@canvas/design'
 import { DesignHeader } from "./components/header";
 import { Button, Layout,  } from "tdesign-react";
-import { IPoint, IRect } from "@canvas/design/types";
+import { IGraphicsInfo, IPoint } from "@canvas/design/types";
 import { IMenuItem } from "@canvas/design/tool/menu";
 import {Attr} from "@/components/attr"
 const { Content } = Layout
@@ -12,7 +12,7 @@ export const DesignEl = () => {
   const [design, setDesign] = useState<Design | null>(null);
   const [menu, setMenu] = useState<IMenuItem[]>([])
   const [contextPoint, setContextPoint] = useState<IPoint | null>(null)
-  const [rect, setRect] = useState<IRect | null | undefined>(null)
+  const [rect, setRect] = useState<IGraphicsInfo | null | undefined>(null)
 
   function handlePoint(e: IPoint) {
     setContextPoint(e)
@@ -37,8 +37,8 @@ export const DesignEl = () => {
     console.log(rect)
   }
 
-  function setRectFun (r:IRect){
-    setRect(r)
+  function setRectFun (r:IGraphicsInfo){
+    setRect({...r})
   }
 
 

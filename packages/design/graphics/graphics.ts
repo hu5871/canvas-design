@@ -3,20 +3,33 @@ import { ControlHandle } from "../control_handle_manager/handler";
 import { calcRectBbox } from "../geo";
 import { Matrix, applyMatrix, identityMatrix, invertMatrix } from "../geo/geo_matrix";
 import { normalizeRect } from "../scene";
-import { IAdvancedAttrs, IBox, IGraphicsAttrs, IGraphicsOpts, IMatrixArr, IPoint, IRect, Optional } from "../types";
+import { IAdvancedAttrs, IBox, IGraphicsAttrs, IGraphicsInfo, IGraphicsOpts, IMatrixArr, IPoint, IRect, Optional } from "../types";
 import { cloneDeep } from "../utils/loadsh";
 import getDpr from "../utils/dpr";
 import { isPointInTransformedRect } from "../utils/hitTest";
 import { omit } from "../utils/omit";
 import { UniqueId } from "../utils/uuid";
-import { getTransformAngle } from "../geo/geo_angle";
+import { deg2Rad, getTransformAngle, normalizeRadian } from "../geo/geo_angle";
 import { recomputeTransformRect } from "../geo/geo_rect";
 import { ITransformRect } from "../control_handle_manager/types";
 import { resizeLine, resizeRect } from "../utils/resize";
+import { rad2Deg } from "../control_handle_manager/utils";
 
 let STATE = 0;
 
-
+export const setters: {
+  [K in keyof IGraphicsInfo]: (grp: Graphics, value: IGraphicsInfo[K]) => void
+} = {
+  x: (grp, value) => grp?.setX(value),
+  y: (grp, value) => grp?.setY(value),
+  width: (grp, value) => grp?.updateAttrs({ width: value }),
+  height: (grp, value) => grp?.updateAttrs({ width: value }),
+  rotate: (grp, value) => {
+    console.log("sret")
+    value = normalizeRadian(deg2Rad(value))
+    grp?.setRotate(value)
+  },
+};
 
 export const multiplyMatrix = (m1: IMatrixArr, m2: IMatrixArr): IMatrixArr => {
   const a1 = m1[0];
@@ -38,9 +51,9 @@ export class Graphics<ATTRS extends IGraphicsAttrs = IGraphicsAttrs> {
   attrs: ATTRS;
   design: Design;
   private noCollectUpdate: boolean;
-  opts?:IGraphicsOpts
+  opts?: IGraphicsOpts
   constructor(
-    attrs: Optional<ATTRS, 'state'|'__id'|'transform'|'type'|'field'>,
+    attrs: Optional<ATTRS, 'state' | '__id' | 'transform' | 'type' | 'field'>,
     design: Design,
     opts?: IGraphicsOpts,
   ) {
@@ -61,13 +74,13 @@ export class Graphics<ATTRS extends IGraphicsAttrs = IGraphicsAttrs> {
     this.attrs.__id = attrs.__id ?? UniqueId();
     this.attrs.transform = transform;
     this.attrs.state = attrs.state ?? STATE;
-    this.noCollectUpdate=Boolean(opts?.noCollectUpdate)
-    this.opts=opts
+    this.noCollectUpdate = Boolean(opts?.noCollectUpdate)
+    this.opts = opts
     this.customAttrs(attrs)
   }
 
 
-  customAttrs(_: Optional<ATTRS, 'state'|'__id'|'transform'|'type'|'field'>) {
+  customAttrs(_: Optional<ATTRS, 'state' | '__id' | 'transform' | 'type' | 'field'>) {
   }
 
 
@@ -84,20 +97,23 @@ export class Graphics<ATTRS extends IGraphicsAttrs = IGraphicsAttrs> {
   }
 
 
-  isVisible(){
+  isVisible() {
     return this.attrs.visible ?? true;
   }
 
-  getParent(){
-    return  this.design.sceneGraph.getParent(this.attrs.__id as string);
+  getParent() {
+    return this.design.sceneGraph.getParent(this.attrs.__id as string);
   }
 
-  getId(){
+  getId() {
     return this.attrs.__id
   }
 
-  updateAttrs(partialAttrs: Partial<IGraphicsAttrs > & IAdvancedAttrs) {
-    if (!partialAttrs.transform) {
+  updateAttrs(partialAttrs: Partial<IGraphicsAttrs> & IAdvancedAttrs, ops?: {
+    resetRender: boolean
+  }) {
+
+    if (!partialAttrs.transform && partialAttrs.x != undefined && partialAttrs.y != undefined) {
       if (partialAttrs.x !== undefined) {
         this.attrs.transform[4] = (partialAttrs.x)
       }
@@ -109,17 +125,16 @@ export class Graphics<ATTRS extends IGraphicsAttrs = IGraphicsAttrs> {
       this.setRotate(partialAttrs.rotate);
     }
 
-    let attrs = omit(partialAttrs, 'x', 'y','rotate') as Partial<ATTRS>
-  
+    let attrs = omit(partialAttrs, 'x', 'y', 'rotate') as Partial<ATTRS>
+
     for (const key in attrs) {
       if (attrs[key as keyof ATTRS] !== undefined) {
         (this.attrs as any)[key as keyof ATTRS] = attrs[key as keyof ATTRS]
       }
     }
-    !this.opts?.noCollectUpdate && this.design.sceneGraph.attrsChange(this.getRect())
   }
 
-  
+
   /**
    * calculate new attributes by control handle
    */
@@ -142,14 +157,14 @@ export class Graphics<ATTRS extends IGraphicsAttrs = IGraphicsAttrs> {
     const rect =
       this.attrs.height === 0
         ? resizeLine(type, newPos, oldRect, {
-            keepPolarSnap: isShiftPressing,
-            scaleFromCenter: isAltPressing,
-          })
+          keepPolarSnap: isShiftPressing,
+          scaleFromCenter: isAltPressing,
+        })
         : resizeRect(type, newPos, oldRect, {
-            keepRatio: isShiftPressing,
-            scaleFromCenter: isAltPressing,
-            flip: flipWhenResize,
-          });
+          keepRatio: isShiftPressing,
+          scaleFromCenter: isAltPressing,
+          flip: flipWhenResize,
+        });
     rect.transform = multiplyMatrix(invertMatrix(parentTf), rect.transform);
     return rect as Partial<ATTRS>;
   }
@@ -163,7 +178,7 @@ export class Graphics<ATTRS extends IGraphicsAttrs = IGraphicsAttrs> {
   }
 
 
-  getBox():ITransformRect {
+  getBox(): ITransformRect {
     return {
       ...this.getSize(),
       transform: this.getWorldTransform(),
@@ -184,6 +199,10 @@ export class Graphics<ATTRS extends IGraphicsAttrs = IGraphicsAttrs> {
     return getTransformAngle(this.getWorldTransform());
   }
 
+  getRotateDegree() {
+    return rad2Deg(normalizeRadian(this.getRotate()));
+  }
+
   setRotate(newRotate: number, center?: IPoint) {
     const rotate = this.getRotate();
     const delta = newRotate - rotate;
@@ -194,6 +213,18 @@ export class Graphics<ATTRS extends IGraphicsAttrs = IGraphicsAttrs> {
       .translate(center.x, center.y);
     this.prependWorldTransform(rotateMatrix.getArray());
   }
+
+
+
+  setY(val: number) {
+    this.attrs.transform[5] = val
+  }
+
+  setX(val: number) {
+    this.attrs.transform[4] = val
+  }
+
+
 
   dRotate(dRotation: number, originWorldTf: IMatrixArr, center: IPoint) {
     const rotateMatrix = new Matrix()
@@ -257,7 +288,7 @@ export class Graphics<ATTRS extends IGraphicsAttrs = IGraphicsAttrs> {
     );
   }
 
-  getStrokeWidth(){
+  getStrokeWidth() {
     return this.attrs.strokeWidth ?? 0;
   }
 
@@ -267,7 +298,7 @@ export class Graphics<ATTRS extends IGraphicsAttrs = IGraphicsAttrs> {
     return parent ? parent.getWorldTransform() : identityMatrix();
   }
 
-  setWorldTransform(worldTf: IMatrixArr){
+  setWorldTransform(worldTf: IMatrixArr) {
     const parentTf = this.getParentWorldTransform();
     const localTf = multiplyMatrix(invertMatrix(parentTf), worldTf);
     this.updateAttrs({
@@ -275,7 +306,7 @@ export class Graphics<ATTRS extends IGraphicsAttrs = IGraphicsAttrs> {
     });
   }
 
-  getRect():IRect {
+  getRect(): IRect {
     return {
       ...this.getLocalPosition(),
       width: this.attrs.width,
@@ -283,20 +314,28 @@ export class Graphics<ATTRS extends IGraphicsAttrs = IGraphicsAttrs> {
     };
   }
 
+
+  getGraphicsInfo(): IGraphicsInfo {
+    return {
+      ...this.getRect(),
+      rotate: this.getRotateDegree(),
+    }
+  }
+
   getAttrs(): ATTRS {
     return cloneDeep(this.attrs);
   }
 
-  getSize(){
+  getSize() {
     return {
-      width:this.attrs.width,
-      height:this.attrs.height
+      width: this.attrs.width,
+      height: this.attrs.height
     }
   }
 
 
   draw() {
-  
+
   }
 
 

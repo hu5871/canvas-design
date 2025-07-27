@@ -206,7 +206,9 @@ export class Resize implements IBaseTool {
       transform: newLocalTf,
     });
     selectedItem.updateAttrs(newAttrs);
+    this.design.sceneGraph.attrsChange({...selectedItem.getGraphicsInfo()})
     this.updatedAttrs = cloneDeep(newAttrs)
+
   }
 
 }

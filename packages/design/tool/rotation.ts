@@ -102,6 +102,8 @@ export class Rotation implements IBaseTool {
         y: cyInSelectedElementBBox,
       },
     );
+
+    this.design.sceneGraph.attrsChange({...selectedItem!.getGraphicsInfo()})
     this.design.render();
   }
   onEnd() {

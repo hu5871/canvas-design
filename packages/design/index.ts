@@ -18,6 +18,7 @@ interface IOps {
 interface EmitEvents {
   [key: string | symbol]: (...args: any[]) => void
   switchTool(type: string): void;
+  updateByGrapicsAttr({key,value}:Record<string,string|number>) :void
 }
 
 class Design {
@@ -47,6 +48,8 @@ class Design {
     })
   }
 
+  
+
   activeTool(type:ToolType){
     this.sceneGraph.activeTool(type)
   }
@@ -58,6 +61,10 @@ class Design {
   destroy(){
     this.designEvent.destroy()
     this.sceneGraph.destroy()
+  }
+
+  emit(eventName:string,val:any){
+    this.emitter.emit(eventName, val);
   }
 
   on<K extends keyof EmitEvents>(eventName: K, handler: EmitEvents[K]) {

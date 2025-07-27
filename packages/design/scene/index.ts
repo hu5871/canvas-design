@@ -1,11 +1,11 @@
 import { Tool } from "../tool";
 import Design from "..";
-import { IPoint, IRect, ITemplateAttrs } from "../types";
+import { IGraphicsInfo, IPoint, IRect, ITemplateAttrs } from "../types";
 import { Template } from '../graphics/template';
 import EventEmitter from '../events/eventEmitter';
 import { EDIT, IMenuItem, Menu } from '../tool/menu';
 import { Store } from '../store';
-import { Graphics } from '../graphics/graphics';
+import { Graphics, setters } from '../graphics/graphics';
 import { ControlHandleManager } from '../control_handle_manager';
 import Grid from '../grid';
 import { offsetRect, rectToVertices } from '../geo/geo_rect';
@@ -62,7 +62,7 @@ export default class SceneGraph {
     this.createTemplates(data)
   }
 
-  createTemplates(data: ITemplateAttrs[]){
+  createTemplates(data: ITemplateAttrs[]) {
     data?.forEach(attrs => {
       const { transform } = attrs
       const tmp = new Template(attrs, this.design, {
@@ -83,8 +83,29 @@ export default class SceneGraph {
   }
 
 
-  getTemplates(){
+  getTemplates() {
     return this.templates
+  }
+
+  updateByGrapicsAttr<K extends keyof IGraphicsInfo>({ key, value }: {
+    key: K;
+    value: IGraphicsInfo[K]; // 值类型与key对应
+  }) {
+
+
+    // ?.updateAttrs({[key]:value},{
+    //   resetRender:true,
+    // })
+
+    const grp = this.design.store.getGraphics()
+    const handler = setters[key];
+
+    if (grp && handler) {
+      handler(grp, value);
+      this.design.sceneGraph.attrsChange({...grp.getGraphicsInfo()})
+      this.design.render()
+    }
+
   }
 
   registerEvent() {
@@ -92,22 +113,23 @@ export default class SceneGraph {
     this.design.designEvent.on("pointerMove", this.onDrag)
     this.design.designEvent.on("pointerUp", this.onEnd)
     this.design.designEvent.on("contextmenu", this.contextmenu)
-    this.design.designEvent.on("delete",this.deleteGraphics.bind(this))
+    this.design.designEvent.on("delete", this.deleteGraphics.bind(this))
+    this.design.on("updateByGrapicsAttr", this.updateByGrapicsAttr.bind(this))
   }
 
-  deleteGraphics(){
+  deleteGraphics() {
     const graphics = this.design.store.getGraphics()
-    const temp= this.design.store.getTemplate()
+    const temp = this.design.store.getTemplate()
 
-    if(graphics) {
-      const uuid= graphics.getId()
-      if (!uuid) return 
-      const temp=  this.getTemplates().find(t=> t.childrenGraphics.find(grap=> grap.getId() === uuid))
+    if (graphics) {
+      const uuid = graphics.getId()
+      if (!uuid) return
+      const temp = this.getTemplates().find(t => t.childrenGraphics.find(grap => grap.getId() === uuid))
       temp?.delete(uuid)
-    }else{
-      const uuid=  temp?.getId()
-      this.templates= this.templates.filter(t=> t !== temp)
-      this.data=  this.data.filter(t=> t.__id != uuid)
+    } else {
+      const uuid = temp?.getId()
+      this.templates = this.templates.filter(t => t !== temp)
+      this.data = this.data.filter(t => t.__id != uuid)
       this.design.store.delete()
     }
     this.design.store.delete()
@@ -119,8 +141,8 @@ export default class SceneGraph {
     this.emitMenu(this.menu.getMenu())
   }
 
-  selectedGraphics(rect:IRect | undefined){
-    this.emitter.emit("selected",rect)
+  selectedGraphics(info: IGraphicsInfo | undefined) {
+    this.emitter.emit("selected", {...info})
   }
 
 
@@ -138,8 +160,8 @@ export default class SceneGraph {
     this.tool.onEnd(e)
   }
 
-  attrsChange(rect: IRect | undefined) {
-    this.emitter.emit("attrsChange", rect)
+  attrsChange(info: IGraphicsInfo | undefined) {
+    this.emitter.emit("attrsChange", info ? {...info} : undefined)
   }
 
   emitMenu(menu: IMenuItem[]) {
@@ -158,9 +180,9 @@ export default class SceneGraph {
     graphics?.drawOutLine()
   }
 
-  drawIndicator(graphics:Graphics){
+  drawIndicator(graphics: Graphics) {
     const bbox = this.getBBox(graphics)
-    const polygon:IPoint[] = rectToVertices(
+    const polygon: IPoint[] = rectToVertices(
       {
         x: 0,
         y: 0,
@@ -262,7 +284,7 @@ export default class SceneGraph {
     ctx.restore();
   }
 
-  getBBox(graphics:Graphics) {
+  getBBox(graphics: Graphics) {
     const rect = graphics.getSize();
     return {
       width: rect.width,
@@ -289,7 +311,7 @@ export default class SceneGraph {
     this.emitter.off(eventName, handler);
   }
 
-  destroy(){
+  destroy() {
     this.tool.destroy()
   }
 }

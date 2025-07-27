@@ -61,3 +61,18 @@ export const normalizeDegree = (degree: number): number => {
 export const checkTransformFlip = (transform: IMatrixArr) => {
   return transform[0] * transform[3] - transform[1] * transform[2] < 0;
 };
+
+export function deg2Rad(degree: number) {
+  return (degree * Math.PI) / 180;
+}
+
+/**
+ * normalize radian, make it in [0, Math.PI * 2)
+ */
+export const normalizeRadian = (radian: number): number => {
+  radian = radian % DOUBLE_PI;
+  if (radian < 0) {
+    radian += DOUBLE_PI;
+  }
+  return radian;
+};
